@@ -1,3 +1,6 @@
+var ErrorHandler = require('../error_handler/errorHandler');
+var {orders} = require('../models/models');
+
 class OrderController {
     async Create(req, res) {
 

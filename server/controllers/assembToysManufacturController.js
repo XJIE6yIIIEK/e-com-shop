@@ -1,3 +1,6 @@
+var ErrorHandler = require('../error_handler/errorHandler');
+var {assemb_toys_manufacturs} = require('../models/models');
+
 class AssembToysManufacturController {
     async Create(req, res) {
 

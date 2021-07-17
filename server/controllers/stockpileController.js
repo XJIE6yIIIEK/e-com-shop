@@ -1,3 +1,6 @@
+var ErrorHandler = require('../error_handler/errorHandler');
+var {stockpiles} = require('../models/models');
+
 class StockpileController {
     async Create(req, res) {
 

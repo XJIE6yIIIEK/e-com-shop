@@ -4,22 +4,20 @@ var {DataTypes} = require('sequelize');
 var users = sequelize.define('t_users', {
     id: {
         type: DataTypes.INTEGER,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     s_name: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     s_hash_password: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    s_salt: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     e_mail: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        unique: true
     }
 });
 
@@ -49,16 +47,7 @@ var roles = sequelize.define('t_roles', {
         type: DataTypes.STRING,
         primaryKey: true,
         allowNull: false
-    },
-    s_write: {
-        type: DataTypes.BOOLEAN
-    },
-    s_read: {
-        type: DataTypes.BOOLEAN
-    },
-    s_update: {
-        type: DataTypes.BOOLEAN
-    },
+    }
 });
 
 var goods_types = sequelize.define('t_goods_types', {
@@ -110,7 +99,8 @@ var assemb_toys_sizes = sequelize.define('t_assemb_toys_sizes', {
 var goods = sequelize.define('t_goods', {
     id: {
         type: DataTypes.INTEGER,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     s_type: {
         type: DataTypes.STRING,
@@ -155,7 +145,8 @@ var orders = sequelize.define('t_orders', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false
+        allowNull: false,
+        autoIncrement: true
     },
     n_user_id: {
         type: DataTypes.INTEGER,
@@ -185,6 +176,7 @@ var goods_to_orders = sequelize.define('t_goods_to_orders', {
     n_order: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        primaryKey: true,
         references: {
             model: 't_orders',
             key: 'id'
