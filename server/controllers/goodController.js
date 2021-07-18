@@ -1,33 +1,33 @@
 var {Op} = require('sequelize');
 var ErrorHandler = require('../error_handler/errorHandler');
-var {goods_to_orders} = require('../models/models');
-var {goods} = require('../models/models');
-var {goods_to_stockpiles} = require('../models/models');
-var {goods_types} = require('../models/models');
+var {GoodsToOrders, Stockpiles} = require('../models/models');
+var {Goods} = require('../models/models');
+var {GoodsToStockpiles} = require('../models/models');
+var {GoodsTypes} = require('../models/models');
 
 class GoodsController {
-    async Create(req, res) {
+    async create(req, res) {
         var {s_type, f_price} = req.body;
-        var created_good = await goods.create({s_type, f_price});
-        return res.json(created_good);
+        var createdGood = await Goods.create({s_type, f_price});
+        return res.json(createdGood);
     }
 
-    async Delete(req, res) {
+    async delete(req, res) {
         var {id} = req.params;
-        var selected_good = await goods.findOne({
+        var selectedGood = await Goods.findOne({
             where: {
                 id: id
             }
         });
-        await selected_good.destroy();
+        await selectedGood.destroy();
         return res.json({succesfull: true});
     }
 
-    async Patch(req, res) {
+    async patch(req, res) {
         var {s_type, f_price} = req.body;
         var {id} = req.params;
 
-        var good = await goods.findOne({
+        var good = await Goods.findOne({
             where: {
                 id: id
             }
@@ -45,41 +45,77 @@ class GoodsController {
         return res.json({succesfull: true});
     }
 
-    async AddToStockpile(req, res) {
+    async addToStockpile(req, res) {
+        var {good_id} = req.params;
+        var {stockpile_id, amount} = req.body;
 
+        var addedGoodToStockpile = await GoodsToStockpiles.create({
+            n_good: good_id,
+            s_stockpile: stockpile_id,
+            n_amount: amount
+        });
+
+        return res.json(addedGoodToStockpile);
     }
 
-    async DeleteFromStockpile(req, res) {
+    async deleteFromStockpile(req, res) {
+        var {good_id} = req.params;
+        var {stockpile_id} = req.body;
 
+        var deletedGoodFromStockpile = await GoodsToStockpiles.findOne({
+            where: {
+                n_good: good_id,
+                s_stockpile: stockpile_id
+            }
+        });
+
+        deletedGoodFromStockpile.destroy();
+        return res.json({succesfull: true});
     }
 
-    async AddToOrder(req, res) {
+    async patchInStockpile(req, res){
+        var {good_id} = req.params;
+        var {stockpile_id, amount} = req.body;
 
+        var patchedGoodInStockpile = await GoodsToStockpiles.findOne({
+            where: {
+                n_good: good_id,
+                s_stockpile: stockpile_id
+            }
+        });
+
+        if(amount){
+            patchedGoodInStockpile.n_amount = amount;
+        }
+
+        patchedGoodInStockpile.save();
+        return res.json({succesfull: true});
     }
 
-    async AddType(req, res) {
-        var {s_name} = req.params;
-        var created_type = await goods_types.create({s_name});
-        return res.json(created_type);
-    }
-
-    async DeleteType(req, res) {
+    async addType(req, res) {
+        console.log('ADD TYPE');
         var {s_name} = req.body;
-        var deleated_type = await goods_types.findOne({
+        var createdType = await GoodsTypes.create({s_name});
+        return res.json(createdType);
+    }
+
+    async deleteType(req, res) {
+        var {s_name} = req.params;
+        var deleatedType = await GoodsTypes.findOne({
             where:{
                 s_name: s_name
             }
         });
-        await deleated_type.destroy();
+        await deleatedType.destroy();
         return res.json({succesfull: true});
     }
 
-    async GetAllTypes(req, res) {
-        var types = await goods_types.findAll();
+    async getAllTypes(req, res) {
+        var types = await GoodsTypes.findAll();
         return res.json(types);
     }
 
-    async GetAll(req, res) {
+    async getAll(req, res) {
         var {curPage, lim, type, gr_th, sm_th, ordr, asc} = req.query;
 
         curPage = curPage - 1 || 0;
@@ -149,19 +185,19 @@ class GoodsController {
             condition.order[condition.order.length] = [ordr, (asc == true ? 'ASC' : 'DESC')];
         }
 
-        var selected_goods = await goods.findAll(condition);
-        return res.json(selected_goods);
+        var selectedGoods = await Goods.findAll(condition);
+        return res.json(selectedGoods);
     }
 
-    async Get(req, res) {
+    async get(req, res) {
         var {id} = req.params;
-        var selected_good = await goods.findOne({
+        var selectedGood = await Goods.findOne({
             where: {
                 id: id
             }
         });
 
-        return res.json(selected_good);
+        return res.json(selectedGood);
     }
 }
 

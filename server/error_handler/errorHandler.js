@@ -8,15 +8,15 @@ class ErrorHandler extends Error {
         this.message = message;
     }
 
-    static BadRequest(message) {
+    static badRequest(message) {
         return new ErrorHandler(404, message);
     }
 
-    static Internalt(message) {
+    static internal(message) {
         return new ErrorHandler(500, message);
     }
 
-    static Forbidden(message) {
+    static forbidden(message) {
         return new ErrorHandler(403, message);
     }
 }

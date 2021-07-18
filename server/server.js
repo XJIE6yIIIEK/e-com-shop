@@ -4,7 +4,8 @@ var sequelize = require('./db');
 var models = require('./models/models');
 var cors = require('cors');
 var router = require('./routes/routes');
-var errorHandler = require('./middleware/middleware');
+var ErrorHandler = require('./middleware/middleware');
+var dbInit = require("./db_init");
 
 var PORT = process.env.PORT || 5000;
 
@@ -12,7 +13,7 @@ var app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api', router);
-app.use(errorHandler);
+app.use(ErrorHandler);
 
 var start = async () => {
     try {
@@ -24,4 +25,4 @@ var start = async () => {
     }
 }
 
-start();
+start().then(() => dbInit(sequelize));

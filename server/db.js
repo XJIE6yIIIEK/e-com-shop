@@ -1,6 +1,6 @@
 var {Sequelize} = require('sequelize');
 
-module.exports = new Sequelize(
+var sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
     process.env.DB_PASSWORD,
@@ -10,3 +10,5 @@ module.exports = new Sequelize(
         port: process.env.DB_PORT
     }
 );
+
+module.exports = sequelize;
