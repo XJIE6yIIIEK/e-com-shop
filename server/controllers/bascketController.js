@@ -1,92 +1,101 @@
-const {Sequelize} = require('sequelize');
 var ErrorHandler = require('../error_handler/errorHandler');
 var {Basckets} = require('../models/models');
 var sequelize = require('../db');
 
 class BascketController {
-    async add(req, res) {
-        var {n_user, n_good, n_amount} = req.body;
-        
-        var createdBascket = await Basckets.create({
-            n_user: n_user,
-            n_good: n_good,
-            n_amount: n_amount
-        });
-
-        return res.json(createdBascket);
-    }
-
-    async patch(req, res) {
-        var {n_user} = req.params;
-        var {n_good, n_amount} = req.body;
-
-        var patchedGoodInBascket = await Basckets.findOne({
-            where: {
+    async add(req, res, next) {
+        try{
+            var {n_user, n_good, n_amount} = req.body;
+            
+            var createdBascket = await Basckets.create({
+                n_user: n_user,
                 n_good: n_good,
-                n_user: n_user
-            }
-        });
+                n_amount: n_amount
+            });
 
-        if(n_amount){
-            patchedGoodInBascket.n_amount = n_amount;
+            return res.status(200).json(createdBascket);
+        } catch(e) {
+            next(e);
         }
-
-        patchedGoodInBascket.save();
-        return res.json({succesfull: true});
     }
 
-    async delete(req, res) {
-        var {n_user} = req.params;
-        var {n_good} = req.body;
+    async patch(req, res, next) {
+        try{
+            var {n_user} = req.params;
+            var {n_good, n_amount} = req.body;
 
-        var condition = {
-            where: {
-                n_user: n_user
+            var patchedGoodInBascket = await Basckets.findOne({
+                where: {
+                    n_good: n_good,
+                    n_user: n_user
+                }
+            });
+
+            if(n_amount){
+                patchedGoodInBascket.n_amount = n_amount;
             }
-        };
 
-        var deletededGoodsInBascket;
-
-        if(n_good){
-            condition.where.n_good = n_good;
-            deletededGoodsInBascket = await Basckets.findAll(condition);
-        } else {
-            deletededGoodsInBascket = await Basckets.findOne(condition);
+            patchedGoodInBascket.save();
+            return res.status(200);
+        } catch(e) {
+            next(e);
         }
-
-        deletededGoodsInBascket.destroy();
-        return res.json({succesfull: true});
     }
 
-    async get(req, res) {
-        var {n_user} = req.params;
+    async delete(req, res, next) {
+        try{
+            var {n_user} = req.params;
+            var {n_good} = req.body;
 
-        var getBascketSumQuery = `SELECT sum(t_goods.f_price * t_basckets.n_amount) AS f_summa FROM t_basckets ` +
-                                 `JOIN t_goods ` +
-                                 `ON t_goods.id = t_basckets.n_good ` +
-                                 `WHERE t_basckets.n_user = ${n_user}`;
-        var bascketSum = await sequelize.query(getBascketSumQuery);
-        bascketSum = bascketSum[0];
+            var condition = {
+                where: {
+                    n_user: n_user
+                }
+            };
 
-        var bascket = {
-            sum: bascketSum.f_summa,
-            goods: []
-        };
+            var deletededGoodsInBascket;
 
-        var goodsInBascket = await Basckets.findAll({
-            where: {
-                n_user: n_user
+            if(n_good){
+                condition.where.n_good = n_good;
+                deletededGoodsInBascket = await Basckets.findAll(condition);
+            } else {
+                deletededGoodsInBascket = await Basckets.findOne(condition);
             }
-        });
 
-        goodsInBascket.forEach(good => {
-            bascket.goods[bascket.goods.length] = {
-                n_good: good.n_good,
-                n_amount: good.n_amount
-            }
-        });
+            deletededGoodsInBascket.destroy();
+            return res.status(200);
+        } catch(e) {
+            next(e);
+        }
+    }
 
-        return res.json(bascket);
+    async get(req, res, next) {
+        try{
+            var {n_user} = req.params;
+
+            var getBascketSumQuery = `SELECT sum(t_goods.f_price * t_basckets.n_amount) AS f_summa FROM t_basckets ` +
+                                    `JOIN t_goods ` +
+                                    `ON t_goods.id = t_basckets.n_good ` +
+                                    `WHERE t_basckets.n_user = ${n_user}`;
+            var bascketSum = await sequelize.query(getBascketSumQuery);
+            bascketSum = bascketSum[0];
+
+            var goodsInBascket = await Basckets.findAll({
+                attributes: ['n_good','n_amount'],
+                where: {
+                    n_user: n_user
+                }
+            });
+
+            var bascket = {
+                sum: bascketSum.f_summa,
+                goods: goodsInBascket
+            };
+
+            return res.status(200).json(bascket);
+        } catch(e) {
+            next(e);
+        }
     }
 }
 
