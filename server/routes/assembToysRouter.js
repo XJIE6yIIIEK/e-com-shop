@@ -21,7 +21,7 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *              properties:
  *                  s_name:
  *                      type: string
- *                      description: Размер моедли.
+ *                      description: Размер модели.
  *              example:
  *                  s_name: 1:1                     
  */
@@ -200,7 +200,7 @@ router.post('/', AssembToysController.create);
  *                              type: object
  *                              $ref: '#/components/schemas/InternalError'
  *              402:
- *                  description: Произошла ошибка при изменении товара.
+ *                  description: Произошла ошибка при изменении сборной модели.
  *                  content:
  *                      application/json:
  *                          schema:
@@ -272,13 +272,6 @@ router.delete('/:n_articul', AssembToysController.delete);
  *          summary: Получение информации о сборной модели.
  *          tags: [AssembToys]
  *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
  *              - in: path
  *                name: n_articul
  *                schema:
@@ -325,13 +318,54 @@ router.get('/:n_articul', AssembToysController.get);
  *          summary: Получение списка сборных моделей.
  *          tags: [AssembToys]
  *          parameters:
- *              - in: header
- *                name: Authorization
+ *              - in: query
+ *                name: curPage
  *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
+ *                      type: integer
+ *                required: false
+ *                description: Текущая страница
+ *              - in: query
+ *                name: lim
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Количество выводимых элементов
+ *              - in: query
+ *                name: manuf
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр сборных моделей по производителю
+ *              - in: query
+ *                name: manuf
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр сборных моделей по размеру
+ *              - in: query
+ *                name: gr_th
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр сборных моделей по количеству деталей (больше, чем указанное значение)
+ *              - in: query
+ *                name: sm_th
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр сборных моделей по количеству деталей (Меньше, чем указанное значение)
+ *              - in: query
+ *                name: ordr
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Сортировать по столбцу. Используются наименования столбцов таблицы t_assemb_toys.
+ *              - in: gr_th
+ *                name: asc
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Сортировать по убыванию или по возрастанию.
  *          responses:
  *              200:
  *                  description: Возврат списка сборных моделей.
@@ -477,13 +511,6 @@ router.delete('/sizes/:s_name', AssembToysController.deleteSize);
  *          summary: Получение вариантов размеров сборных моделей.
  *          tags: [AssembToys]
  *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
  *          responses:
  *              200:
  *                  description: Возврат списка размеров сборных моделей.
@@ -523,7 +550,7 @@ router.get('/sizes', AssembToysController.getAllSizes);
  * @swagger
  * /assemb_toys/manufacturs:
  *      post:
- *          summary: Создание производителя товара.
+ *          summary: Создание производителя сборных моделей.
  *          tags: [AssembToys]
  *          parameters:
  *              - in: header
@@ -749,13 +776,6 @@ router.get('/manufacturs/:s_name', AssembToysManufacturController.get);
  *          summary: Получение списка всех производителей.
  *          tags: [AssembToys]
  *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
  *          responses:
  *              200:
  *                  description: Возврат списка производителей.

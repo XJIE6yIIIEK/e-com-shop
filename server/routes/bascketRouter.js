@@ -39,7 +39,7 @@ var BascketController = require('../controllers/bascketController');
  * @swagger
  * /bascket:
  *      post:
- *          summary: Добавление товара в корзину пользователя.
+ *          summary: Добавление товар в корзину пользователя.
  *          tags: [Backets]
  *          parameters:
  *              - in: header
@@ -50,7 +50,7 @@ var BascketController = require('../controllers/bascketController');
  *                required: true
  *                description: JWT токен
  *          requestBody:
- *              description: Объект, содержащий информацию о пользователе.
+ *              description: Объект, содержащий информацию о пользователе и добавляемом товаре.
  *              required: true
  *              content:
  *                  application/json:

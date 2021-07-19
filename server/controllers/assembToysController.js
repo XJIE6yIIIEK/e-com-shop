@@ -108,7 +108,7 @@ class AssembToysController {
 
     async getAll(req, res, next) {
         try{
-            var {curPage, lim, manuf, model, gr_th, sm_th, size, ordr, asc} = req.query;
+            var {curPage, lim, manuf, gr_th, sm_th, size, ordr, asc} = req.query;
 
             curPage = curPage - 1 || 0;
             lim = lim || 10;
@@ -127,16 +127,6 @@ class AssembToysController {
                 offset: curPage * lim,
                 limit: lim
             };
-
-            if(model) {
-                if (!condition.where[Op.and]) {
-                    condition.where[Op.and] = [];
-                }
-
-                condition.where[Op.and][condition.where[Op.and].length] = {
-                    s_model: model
-                }
-            }
 
             if(size) {
                 if (!condition.where[Op.and]) {

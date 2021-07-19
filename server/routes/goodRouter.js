@@ -161,16 +161,9 @@ router.delete('/types/:s_name', GoodController.deleteType);
  * @swagger
  * /good/types:
  *      get:
- *          summary: Создание типа товара.
+ *          summary: Получение типов товаров.
  *          tags: [Goods]
  *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
  *          responses:
  *              200:
  *                  description: Возврат списка типов товаров.
@@ -189,7 +182,7 @@ router.delete('/types/:s_name', GoodController.deleteType);
  *                              type: object
  *                              $ref: '#/components/schemas/InternalError'
  *              402:
- *                  description: Произошла ошибка при создании типа.
+ *                  description: Произошла ошибка при возврате типов товаров.
  *                  content:
  *                      application/json:
  *                          schema:
@@ -280,13 +273,48 @@ router.post('/', GoodController.create);
  *          summary: Получение списка товаров.
  *          tags: [Goods]
  *          parameters:
- *              - in: header
- *                name: Authorization
+ *              - in: query
+ *                name: curPage
  *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
+ *                      type: integer
+ *                required: false
+ *                description: Текущая страница
+ *              - in: query
+ *                name: lim
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Количество выводимых элементов
+ *              - in: query
+ *                name: type
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр типа товара
+ *              - in: query
+ *                name: gr_th
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр товаров по стоимости (больше, чем указанное значение)
+ *              - in: query
+ *                name: sm_th
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Фильтр товаров по стоимости (Меньше, чем указанное значение)
+ *              - in: query
+ *                name: ordr
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Сортировать по столбцу. Используются наименования столбцов таблицы t_goods.
+ *              - in: gr_th
+ *                name: asc
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Сортировать по убыванию или по возрастанию.
  *          responses:
  *              200:
  *                  description: Возврат списка товаров.
@@ -326,7 +354,7 @@ router.get('/', GoodController.getAll);
  * @swagger
  * /good/{id}:
  *      patch:
- *          summary: Получение списка товаров.
+ *          summary: Изменение информации о товаре.
  *          tags: [Goods]
  *          parameters:
  *              - in: header
@@ -352,7 +380,7 @@ router.get('/', GoodController.getAll);
  *                          properties:
  *                              s_type:
  *                                  type: integer
- *                                  description: ID пользователя.
+ *                                  description: Тип товара.
  *                              f_price:
  *                                  type: number
  *                                  description: Цена товара
@@ -391,16 +419,9 @@ router.patch('/:id', GoodController.patch);
  * @swagger
  * /good/{id}:
  *      get:
- *          summary: Получение списка товаров.
+ *          summary: Получение информации о товару.
  *          tags: [Goods]
  *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
  *              - in: path
  *                name: id
  *                schema:
@@ -521,7 +542,7 @@ router.delete('/:id', GoodController.delete);
  *                          properties:
  *                              s_stockpile:
  *                                  type: string
- *                                  description: Склад.
+ *                                  description: Имя склада.
  *                              n_amount:
  *                                  type: number
  *                                  description: Количество товара.
@@ -688,7 +709,7 @@ router.patch('/:id/stockpile', GoodController.patchInStockpile);
  *                              type: object
  *                              $ref: '#/components/schemas/InternalError'
  *              402:
- *                  description: Произошла ошибка при удалени товара со склада.
+ *                  description: Произошла ошибка при удалении товара со склада.
  *                  content:
  *                      application/json:
  *                          schema:

@@ -6,7 +6,7 @@ var StockpileController = require('../controllers/stockpileController');
  * @swagger
  * tags:
  *      name: Stockpiles
- *      description: API для управления учетными записями.
+ *      description: API для управления складами.
  */
 
 /**
@@ -156,9 +156,6 @@ router.post('/', StockpileController.create);
  *                  application/json:
  *                      schema:
  *                          type: object
- *                          require:
- *                              - s_address
- *                              - s_phone_number
  *                          properties:
  *                              s_address:
  *                                  type: string
@@ -259,6 +256,18 @@ router.delete('/:s_name', StockpileController.delete);
  *                      format: Bearer <token>
  *                required: true
  *                description: JWT токен
+ *              - in: query
+ *                name: curPage
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Текущая страница
+ *              - in: query
+ *                name: lim
+ *                schema:
+ *                      type: integer
+ *                required: false
+ *                description: Количество выводимых элементов
  *          responses:
  *              200:
  *                  description: Возврат списка складов.
@@ -321,7 +330,7 @@ router.get('/', StockpileController.getAll);
  *                              type: object
  *                              $ref: '#/components/schemas/InternalError'
  *              402:
- *                  description: Произошла ошибка при изменении склада.
+ *                  description: Произошла ошибка при возврате склада.
  *                  content:
  *                      application/json:
  *                          schema:
