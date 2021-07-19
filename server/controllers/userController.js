@@ -1,6 +1,7 @@
 var ErrorHandler = require('../error_handler/errorHandler');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
+var {validationResult} = require('express-validator');
 var {Users} = require('../models/models');
 var {UserToRoles} = require('../models/models');
 
@@ -15,73 +16,97 @@ var generateJWT = (id, e_mail, roles) => {
 
 class UserController {
     async registration(req, res, next){
-        var {e_mail, s_password, s_name} = req.body;
+        try{
+            var validationErrors = validationResult(req);
 
-        if(!e_mail || !s_password){
-            return next(ErrorHandler.badRequest('Incorrect e-mail or password'));
-        }
-
-        var userCandidate = await Users.findOne({
-            where: {
-                e_mail: e_mail
+            if(!validationErrors.isEmpty()){
+                return next(ErrorHandler.badRequest('Неправильные email, пароль или имя пользователя', validationErrors));
             }
-        });
 
-        if(userCandidate){
-            return next(ErrorHandler.badRequest('User witch this e-mail is already registered'));
+            var {e_mail, s_password, s_name} = req.body;
+
+            var userEmailCandidate = await Users.findOne({
+                where: {
+                    e_mail: e_mail
+                }
+            });
+
+            if(userEmailCandidate){
+                return next(ErrorHandler.badRequest('Пользователь с таким email уже существует'));
+            }
+
+            var userNameCandidate = await Users.findOne({
+                where: {
+                    s_name: s_name
+                }
+            });
+
+            if(userNameCandidate){
+                return next(ErrorHandler.badRequest('Пользователь с таким именем уже существует'));
+            }
+
+            var hashPassword = await bcrypt.hash(s_password, 3);
+
+            var createdUser = await Users.create({
+                s_hash_password: hashPassword,
+                e_mail: e_mail,
+                s_name: s_name
+            });
+
+            var createdRoleForUser = await UserToRoles.create({
+                n_user: createdUser.id,
+                s_role: 'user'
+            });
+
+            var token = generateJWT(createdUser.id, e_mail, [createdRoleForUser.s_role]);
+            return res.status(200).json({token});
+        } catch(e) {
+            next(e);
         }
-
-        var hashPassword = await bcrypt.hash(s_password, 3);
-
-        var createdUser = await Users.create({
-            s_hash_password: hashPassword,
-            e_mail: e_mail,
-            s_name: s_name
-        });
-
-        var createdRoleForUser = await UserToRoles.create({
-            n_user: createdUser.id,
-            s_role: 'user'
-        });
-
-        var token = generateJWT(createdUser.id, e_mail, [createdRoleForUser.s_role]);
-        return res.json({token});
     }
 
     async login(req, res, next){
-        var {e_mail, s_password} = req.body;
-        
-        var user = await Users.findOne({
-            where: {
-                e_mail: e_mail
+        try{
+            var {e_mail, s_password} = req.body;
+            
+            var user = await Users.findOne({
+                where: {
+                    e_mail: e_mail
+                }
+            });
+
+            if(!user){
+                return next(ErrorHandler.badRequest('Пользователь не найден'));
             }
-        });
 
-        if(!user){
-            return next(ErrorHandler.badRequest('User don`t found'));
-        }
-
-        var correctPassword = bcrypt.compareSync(s_password, user.s_hash_password);
-        if(!correctPassword){
-            return next(ErrorHandler.badRequest('Incorrect password'));
-        }
-
-        var userRoles = await UserToRoles.findAll({
-            where: {
-                n_user: user.id
+            var correctPassword = bcrypt.compareSync(s_password, user.s_hash_password);
+            if(!correctPassword){
+                return next(ErrorHandler.badRequest('Неправильный пароль'));
             }
-        });
 
-        var roles = [];
-        userRoles.forEach(role => roles[roles.length] = role.s_role);
-        
-        var token = generateJWT(user.id, e_mail, roles);
-        return res.json({token});
+            var userRoles = await UserToRoles.findAll({
+                where: {
+                    n_user: user.id
+                }
+            });
+
+            var roles = [];
+            userRoles.forEach(role => roles[roles.length] = role.s_role);
+            
+            var token = generateJWT(user.id, e_mail, roles);
+            return res.status(200).json({token});
+        } catch(e) {
+            next(e);
+        }
     }
 
     async auth(req, res, next){
-        var token = generateJWT(req.user.id, req.user.e_mail, req.user.roles);
-        return res.json({token});
+        try {
+            var token = generateJWT(req.user.id, req.user.e_mail, req.user.roles);
+            return res.status(200).json({token});
+        } catch(e) {
+            next(e);
+        }
     }
 }
 

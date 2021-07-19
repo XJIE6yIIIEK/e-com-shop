@@ -16,8 +16,8 @@ router.patch('/:id', GoodController.patch);
 router.get('/:id', GoodController.get);
 router.delete('/:id', GoodController.delete);
 
-router.post('/:good_id/stockpile', GoodController.addToStockpile);
-router.patch('/:good_id/stockpile', GoodController.patchInStockpile);
-router.delete('/:good_id/stockpile', GoodController.deleteFromStockpile);
+router.post('/:n_good/stockpile', GoodController.addToStockpile);
+router.patch('/:n_good/stockpile', GoodController.patchInStockpile);
+router.delete('/:n_good/stockpile', GoodController.deleteFromStockpile);
 
 module.exports = router;

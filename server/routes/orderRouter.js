@@ -3,9 +3,9 @@ var router = new Router();
 var OrderController = require('../controllers/orderController');
 
 router.post('/', OrderController.create);
-router.patch('/:order_id', OrderController.patch);
-router.delete('/:order_id', OrderController.delete);
-router.get('/user/:user_id', OrderController.getAll);
-router.get('/:order_id', OrderController.get);
+router.patch('/:n_order', OrderController.patch);
+router.delete('/:n_order', OrderController.delete);
+router.get('/user/:n_user', OrderController.getAll);
+router.get('/:n_order', OrderController.get);
 
 module.exports = router;

@@ -7,11 +7,11 @@ var sequelize = require('../db');
 
 class OrderController {
     async create(req, res) {
-        var {user_id} = req.body;
+        var {n_user} = req.body;
 
         var goodsInBascket = await Basckets.findAll({
             where: {
-                n_user: user_id
+                n_user: n_user
             }
         });
 
@@ -34,11 +34,11 @@ class OrderController {
     }
 
     async delete(req, res) {
-        var {order_id} = req.params;
+        var {n_order} = req.params;
 
         var goodsInOrders = await GoodsToOrders.findAll({
             where: {
-                n_order: order_id
+                n_order: n_order
             }
         });
 
@@ -48,7 +48,7 @@ class OrderController {
 
         var order = await Orders.findOne({
             where: {
-                id: order_id
+                id: n_order
             }
         });
 
@@ -58,11 +58,11 @@ class OrderController {
     }
 
     async patch(req, res) {
-        var {order_id} = req.params;
+        var {n_order} = req.params;
 
         var order = await Orders.findOne({
             where: {
-                id: order_id
+                id: n_order
             }
         });
 
@@ -75,11 +75,11 @@ class OrderController {
     }
 
     async getAll(req, res) {
-        var {user_id} = req.params;
+        var {n_user} = req.params;
 
         var orders = await Orders.findAll({
             where: {
-                n_user: user_id
+                n_user: n_user
             }
         });
 
@@ -87,18 +87,18 @@ class OrderController {
     }
 
     async get(req, res) {
-        var {order_id} = req.params;
+        var {order_id: n_order} = req.params;
 
         var getOrderQuery = `WITH t_order_sum AS ( ` +
-                            `   SELECT sum(t_goods.f_price * t_goods_to_orders.n_amount) AS f_summa, ${order_id} AS n_order FROM t_goods_to_orders ` +
+                            `   SELECT sum(t_goods.f_price * t_goods_to_orders.n_amount) AS f_summa, ${n_order} AS n_order FROM t_goods_to_orders ` +
                             `   JOIN t_goods ` +
                             `   ON t_goods.id = t_goods_to_orders.n_good ` +
-                            `   WHERE t_goods_to_orders.n_order = ${order_id} ` +
+                            `   WHERE t_goods_to_orders.n_order = ${n_order} ` +
                             `) ` +
                             `SELECT t_orders.*, t_order_sum.f_summa AS f_total FROM t_orders ` +
                             `JOIN t_order_sum ` +
                             `ON t_order_sum.n_order = t_orders.id ` +
-                            `WHERE t_orders.id = ${order_id}`;
+                            `WHERE t_orders.id = ${n_order}`;
         
         var order = await sequelize.query(getOrderQuery);
         order = order[0][0];

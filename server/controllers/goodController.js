@@ -1,6 +1,5 @@
 var {Op} = require('sequelize');
 var ErrorHandler = require('../error_handler/errorHandler');
-var {GoodsToOrders, Stockpiles} = require('../models/models');
 var {Goods} = require('../models/models');
 var {GoodsToStockpiles} = require('../models/models');
 var {GoodsTypes} = require('../models/models');
@@ -46,26 +45,26 @@ class GoodsController {
     }
 
     async addToStockpile(req, res) {
-        var {good_id} = req.params;
-        var {stockpile_id, amount} = req.body;
+        var {n_good} = req.params;
+        var {s_stockpile, n_amount} = req.body;
 
         var addedGoodToStockpile = await GoodsToStockpiles.create({
-            n_good: good_id,
-            s_stockpile: stockpile_id,
-            n_amount: amount
+            n_good: n_good,
+            s_stockpile: s_stockpile,
+            n_amount: n_amount
         });
 
         return res.json(addedGoodToStockpile);
     }
 
     async deleteFromStockpile(req, res) {
-        var {good_id} = req.params;
-        var {stockpile_id} = req.body;
+        var {n_good} = req.params;
+        var {s_stockpile} = req.body;
 
         var deletedGoodFromStockpile = await GoodsToStockpiles.findOne({
             where: {
-                n_good: good_id,
-                s_stockpile: stockpile_id
+                n_good: n_good,
+                s_stockpile: s_stockpile
             }
         });
 
@@ -74,18 +73,18 @@ class GoodsController {
     }
 
     async patchInStockpile(req, res){
-        var {good_id} = req.params;
-        var {stockpile_id, amount} = req.body;
+        var {n_good} = req.params;
+        var {s_stockpile, n_amount} = req.body;
 
         var patchedGoodInStockpile = await GoodsToStockpiles.findOne({
             where: {
-                n_good: good_id,
-                s_stockpile: stockpile_id
+                n_good: n_good,
+                s_stockpile: s_stockpile
             }
         });
 
-        if(amount){
-            patchedGoodInStockpile.n_amount = amount;
+        if(n_amount){
+            patchedGoodInStockpile.n_amount = n_amount;
         }
 
         patchedGoodInStockpile.save();

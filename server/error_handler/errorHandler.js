@@ -8,16 +8,20 @@ class ErrorHandler extends Error {
         this.message = message;
     }
 
-    static badRequest(message) {
-        return new ErrorHandler(404, message);
+    static badRequest(message, errors = []) {
+        return new ErrorHandler(402, message, errors);
     }
 
-    static internal(message) {
-        return new ErrorHandler(500, message);
+    static internal(message, errors = []) {
+        return new ErrorHandler(500, message, errors);
     }
 
-    static forbidden(message) {
-        return new ErrorHandler(403, message);
+    static forbidden(message, errors = []) {
+        return new ErrorHandler(403, message, errors);
+    }
+
+    static unauthorized(message, errors = []) {
+        return new ErrorHandler(401, message, errors);
     }
 }
 

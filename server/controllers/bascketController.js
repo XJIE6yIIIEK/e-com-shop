@@ -5,30 +5,30 @@ var sequelize = require('../db');
 
 class BascketController {
     async add(req, res) {
-        var {user_id, good_id, amount} = req.body;
+        var {n_user, n_good, n_amount} = req.body;
         
         var createdBascket = await Basckets.create({
-            n_user: user_id,
-            n_good: good_id,
-            n_amount: amount
+            n_user: n_user,
+            n_good: n_good,
+            n_amount: n_amount
         });
 
         return res.json(createdBascket);
     }
 
     async patch(req, res) {
-        var {user_id} = req.params;
-        var {good_id, amount} = req.body;
+        var {n_user} = req.params;
+        var {n_good, n_amount} = req.body;
 
         var patchedGoodInBascket = await Basckets.findOne({
             where: {
-                n_good: good_id,
-                n_user: user_id
+                n_good: n_good,
+                n_user: n_user
             }
         });
 
-        if(amount){
-            patchedGoodInBascket.n_amount = amount;
+        if(n_amount){
+            patchedGoodInBascket.n_amount = n_amount;
         }
 
         patchedGoodInBascket.save();
@@ -36,19 +36,19 @@ class BascketController {
     }
 
     async delete(req, res) {
-        var {user_id} = req.params;
-        var {good_id} = req.body;
+        var {n_user} = req.params;
+        var {n_good} = req.body;
 
         var condition = {
             where: {
-                n_user: user_id
+                n_user: n_user
             }
         };
 
         var deletededGoodsInBascket;
 
-        if(good_id){
-            condition.where.n_good = good_id;
+        if(n_good){
+            condition.where.n_good = n_good;
             deletededGoodsInBascket = await Basckets.findAll(condition);
         } else {
             deletededGoodsInBascket = await Basckets.findOne(condition);
@@ -59,12 +59,12 @@ class BascketController {
     }
 
     async get(req, res) {
-        var {user_id} = req.params;
+        var {n_user} = req.params;
 
         var getBascketSumQuery = `SELECT sum(t_goods.f_price * t_basckets.n_amount) AS f_summa FROM t_basckets ` +
                                  `JOIN t_goods ` +
                                  `ON t_goods.id = t_basckets.n_good ` +
-                                 `WHERE t_basckets.n_user = ${user_id}`;
+                                 `WHERE t_basckets.n_user = ${n_user}`;
         var bascketSum = await sequelize.query(getBascketSumQuery);
         bascketSum = bascketSum[0];
 
@@ -75,7 +75,7 @@ class BascketController {
 
         var goodsInBascket = await Basckets.findAll({
             where: {
-                n_user: user_id
+                n_user: n_user
             }
         });
 
