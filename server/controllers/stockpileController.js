@@ -20,14 +20,18 @@ class StockpileController {
 
     async patch(req, res, next) {
         try{
-            var {s_address, s_phone_number} = req.body;
-            var {s_name} = req.params;
+            var {s_address, s_phone_number, s_name} = req.body;
+            var {id} = req.params;
 
             var stockpile = await Stockpiles.findOne({
                 where: {
-                    s_name: s_name
+                    id: id
                 }
             });
+
+            if(s_name){
+                stockpile.s_name = s_name;
+            }
 
             if(s_address){
                 stockpile.s_address = s_address;
@@ -46,10 +50,10 @@ class StockpileController {
 
     async delete(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {id} = req.params;
             var deleatedStockpile = await Stockpiles.findOne({
                 where:{
-                    s_name: s_name
+                    id: id
                 }
             });
 
@@ -81,18 +85,18 @@ class StockpileController {
 
     async get(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {id} = req.params;
             
             var selectedStockpile = await Stockpiles.findOne({
                 where: {
-                    s_name: s_name
+                    id: id
                 }
             });
 
             var selectedGoods = await GoodsToStockpiles.findAll({
                 attributes: ['n_good', 'n_amount'],
                 where:{
-                    s_stockpile: s_name
+                    n_stockpile: id
                 }
             });
 

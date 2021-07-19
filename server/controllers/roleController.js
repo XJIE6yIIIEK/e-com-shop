@@ -7,13 +7,17 @@ var {Users} = require('../models/models');
 class RoleController {
     async create(req, res, next) {
         try{
-            var {s_name} = req.body;
+            var {s_id, s_name} = req.body;
+
+            if(!s_id){
+                return next(ErrorHandler.badRequest('Не указано ID роли'));
+            }
 
             if(!s_name){
                 return next(ErrorHandler.badRequest('Не указано имя роли'));
             }
 
-            var createdRole = await Roles.create({s_name});
+            var createdRole = await Roles.create({s_id, s_name});
             return res.status(200).json(createdRole);
         } catch(e) {
             next(e);
@@ -22,15 +26,15 @@ class RoleController {
 
     async delete(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {s_id} = req.params;
 
-            if(!s_name){
+            if(!s_id){
                 return next(ErrorHandler.badRequest('Не указано имя роли'));
             }
 
             var selectedRole = await Roles.findOne({
                 where: {
-                    s_name: s_name
+                    s_name: s_id
                 }
             });
 
@@ -47,16 +51,16 @@ class RoleController {
 
     async patch(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {s_id} = req.params;
 
-            if(!s_name){
+            if(!s_id){
                 return next(ErrorHandler.badRequest('Не указано имя роли'));
             }
             //var {s_new_name} = req.body;
 
             var role = await Roles.findOne({
                 where: {
-                    s_name: s_name
+                    s_name: s_id
                 }
             });
 
@@ -77,12 +81,11 @@ class RoleController {
 
     async addToUser(req, res, next) {
         try{
-            var {n_user} = req.params;
-            var {s_role} = req.body;
+            var {n_user, s_id} = req.params;
 
             var addedRoleToUser = await UserToRoles.create({
                 n_user: n_user,
-                s_role: s_role
+                s_role: s_id
             });
 
             return res.status(200).json(addedRoleToUser);
@@ -97,13 +100,12 @@ class RoleController {
 
     async deleteFromUser(req, res, next) {
         try{
-            var {n_user} = req.params;
-            var {s_role} = req.body;
+            var {n_user, s_id} = req.params;
 
             var deletedRoleToUser = await UserToRoles.findOne({
                 where: {
                     n_user: n_user,
-                    s_role: s_role
+                    s_role: s_id
                 }
             });
             

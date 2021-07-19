@@ -1,6 +1,7 @@
 var Router = require('express');
 var router = new Router();
 var StockpileController = require('../controllers/stockpileController');
+var RoleMiddleware = require('../middleware/roleMiddleware');
 
 /**
  * @swagger
@@ -15,11 +16,12 @@ var StockpileController = require('../controllers/stockpileController');
  *      schemas:
  *          Stockpile:
  *              type: object
- *              require:
+ *              require:                  
  *                  - s_name
- *                  - s_address
- *                  - s_phone_number
  *              properties:
+ *                  id:
+ *                      type: integer
+ *                      description: ID склада
  *                  s_name:
  *                      type: string
  *                      description: Имя склада.
@@ -30,9 +32,21 @@ var StockpileController = require('../controllers/stockpileController');
  *                      type: string
  *                      description: Телефон склада
  *              example:
- *                  s_name: Склад настольных игр
- *                  s_address: г. Пермь, ул. Ленина, д. 1
- *                  s_phone_number: 2130000
+ *                  Все данные известны:
+ *                      id: 1
+ *                      s_name: Склад настольных игр
+ *                      s_address: г. Пермь, ул. Ленина, д. 1
+ *                      s_phone_number: 2130000
+ *                  Неизвестен телефон и адрес:
+ *                      id: 1
+ *                      s_name: Склад настольных игр
+ *                      s_address: null
+ *                      s_phone_number: null
+ *                  Неизвестен адрес или отсутствует адрес:
+ *                      id: 1
+ *                      s_name: Склад настольных игр
+ *                      s_address: null
+ *                      s_phone_number: 2130000
  *                      
  */
 
@@ -43,6 +57,9 @@ var StockpileController = require('../controllers/stockpileController');
  *          ExtendedStockpile:
  *              type: object
  *              properties:
+ *                  id:
+ *                      type: integer
+ *                      description: ID склада
  *                  s_name:
  *                      type: string
  *                      description: Имя склада.
@@ -64,6 +81,7 @@ var StockpileController = require('../controllers/stockpileController');
  *                                  type: integer
  *                                  description: Количество товара на складе
  *              example:
+ *                  id: 1
  *                  s_name: Склад настольных игр
  *                  s_address: г. Пермь, ул. Ленина, д. 1
  *                  s_phone_number: 2130000
@@ -127,11 +145,11 @@ var StockpileController = require('../controllers/stockpileController');
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', StockpileController.create);
+router.post('/', RoleMiddleware(['admin']), StockpileController.create);
 
 /**
  * @swagger
- * /stockpile/{s_name}:
+ * /stockpile/{id}:
  *      patch:
  *          summary: Изменение данных склада.
  *          tags: [Stockpiles]
@@ -144,11 +162,11 @@ router.post('/', StockpileController.create);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
- *                      type: string
+ *                      type: integer
  *                required: true
- *                description: Имя склада
+ *                description: ID склада
  *          requestBody:
  *              description: Объект, содержащий информацию о складе.
  *              required: true
@@ -157,13 +175,17 @@ router.post('/', StockpileController.create);
  *                      schema:
  *                          type: object
  *                          properties:
+ *                              s_name:
+ *                                  type: string
+ *                                  description: Имя склада
  *                              s_address:
  *                                  type: string
- *                                  description: Новый адрес склада
+ *                                  description: Адрес склада
  *                              s_phone_number:
  *                                  type: string
- *                                  description: Новый телефон склада
+ *                                  description: Телефон склада
  *                          example:
+ *                              s_name: Склад плюшевых игрушек
  *                              s_address: г. Пермь, ул. Ленина, д. 1
  *                              s_phone_number: 2130000
  *          responses:
@@ -192,11 +214,11 @@ router.post('/', StockpileController.create);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:s_name', StockpileController.patch);
+router.patch('/:id', RoleMiddleware(['admin']), StockpileController.patch);
 
 /**
  * @swagger
- * /stockpile/{s_name}:
+ * /stockpile/{id}:
  *      delete:
  *          summary: Удаление склада.
  *          tags: [Stockpiles]
@@ -209,11 +231,11 @@ router.patch('/:s_name', StockpileController.patch);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
- *                      type: string
+ *                      type: integer
  *                required: true
- *                description: Имя склада
+ *                description: ID склада
  *          responses:
  *              200:
  *                  description: Склад успешно удалён.
@@ -240,7 +262,7 @@ router.patch('/:s_name', StockpileController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:s_name', StockpileController.delete);
+router.delete('/:id', RoleMiddleware(['admin']), StockpileController.delete);
 
 /**
  * @swagger
@@ -292,11 +314,11 @@ router.delete('/:s_name', StockpileController.delete);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.get('/', StockpileController.getAll);
+router.get('/', RoleMiddleware(['admin']), StockpileController.getAll);
 
 /**
  * @swagger
- * /stockpile/{s_name}:
+ * /stockpile/{id}:
  *      get:
  *          summary: Получение данных о складе, в том числе какие товары находятся на складе и в каком количестве.
  *          tags: [Stockpiles]
@@ -309,11 +331,11 @@ router.get('/', StockpileController.getAll);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
- *                      type: string
+ *                      type: integer
  *                required: true
- *                description: Имя склада
+ *                description: ID склада
  *          responses:
  *              200:
  *                  description: Возврат информации о складе.
@@ -345,6 +367,6 @@ router.get('/', StockpileController.getAll);
  *                              $ref: '#/components/schemas/InternalError'
  *                              
  */
-router.get('/:s_name', StockpileController.get);
+router.get('/:id', RoleMiddleware(['admin']), StockpileController.get);
 
 module.exports = router;

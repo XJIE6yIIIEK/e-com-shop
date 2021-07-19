@@ -1,6 +1,7 @@
 var Router = require('express');
 var router = new Router();
 var BascketController = require('../controllers/bascketController');
+var AuthMiddleware = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -88,7 +89,7 @@ var BascketController = require('../controllers/bascketController');
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', BascketController.add);
+router.post('/', AuthMiddleware, BascketController.add);
 
 /**
  * @swagger
@@ -153,7 +154,7 @@ router.post('/', BascketController.add);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:n_user', BascketController.patch);
+router.patch('/:n_user', AuthMiddleware, BascketController.patch);
 
 /**
  * @swagger
@@ -175,19 +176,12 @@ router.patch('/:n_user', BascketController.patch);
  *                      type: integer
  *                required: true
  *                description: ID пользователя.
- *          requestBody:
- *              description: Объект, содержащий артикул товара.
- *              required: true
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: object
- *                          properties:
- *                              n_good:
- *                                  type: integer
- *                                  description: Артикул товара.
- *                          examples:
- *                              n_good: 3
+ *              - in: path
+ *                name: n_good
+ *                schema:
+ *                      type: integer
+ *                required: true
+ *                description: ID товара.
  *          responses:
  *              200:
  *                  description: Товар успешно удалён из корзины.
@@ -214,7 +208,7 @@ router.patch('/:n_user', BascketController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:n_user', BascketController.delete);
+router.delete('/:n_user/:n_good', AuthMiddleware, BascketController.delete);
 
 /**
  * @swagger
@@ -288,6 +282,6 @@ router.delete('/:n_user', BascketController.delete);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.get('/:n_user', BascketController.get);
+router.get('/:n_user', AuthMiddleware, BascketController.get);
 
 module.exports = router;

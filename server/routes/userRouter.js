@@ -63,13 +63,18 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *          Role:
  *              type: object
  *              require:
+ *                  - s_id
  *                  - s_name
  *              properties:
+ *                  s_id:
+ *                      type: string
+ *                      description: ID роли.
  *                  s_name:
  *                      type: string
  *                      description: Название роли.
  *              example:
- *                  s_name: admin
+ *                  s_id: admin
+ *                  s_name: Администратор
  *                      
  */
 
@@ -319,8 +324,7 @@ router.post('/login', UserController.login);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-//router.get('/auth', AuthMiddleware, UserController.auth);
-router.get('/auth', UserController.auth);
+router.get('/auth', AuthMiddleware, UserController.auth);
 
 /**
  * @swagger
@@ -343,14 +347,7 @@ router.get('/auth', UserController.auth);
  *                  application/json:
  *                      schema:
  *                          type: object
- *                          require:
- *                              - s_name
- *                          properties:
- *                              s_name:
- *                                  type: string
- *                                  description: Имя роли.
- *                          example:
- *                              s_name: mng
+ *                          $ref: '#/components/schemas/Role'
  *          responses:
  *              200:
  *                  description: Роль успешно создана.
@@ -382,12 +379,11 @@ router.get('/auth', UserController.auth);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-//router.post('/role', RoleMiddleware(['admin']), RoleController.create);
-router.post('/role', RoleController.create);
+router.post('/role', RoleMiddleware(['admin']), RoleController.create);
 
 /**
  * @swagger
- * /user/role/{s_name}:
+ * /user/role/{s_id}:
  *      delete:
  *          summary: Удаление роли.
  *          tags: [Users]
@@ -400,7 +396,7 @@ router.post('/role', RoleController.create);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: s_id
  *                schema:
  *                      type: string
  *                required: true
@@ -431,11 +427,11 @@ router.post('/role', RoleController.create);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/role/:s_name', RoleController.delete);
+router.delete('/role/:s_name', RoleMiddleware(['admin']), RoleController.delete);
 
 /**
  * @swagger
- * /user/role/{s_name}:
+ * /user/role/{s_id}:
  *      patch:
  *          summary: Изменение параметров роли.
  *          tags: [Users]
@@ -448,7 +444,7 @@ router.delete('/role/:s_name', RoleController.delete);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: s_id
  *                schema:
  *                      type: string
  *                required: true
@@ -479,11 +475,11 @@ router.delete('/role/:s_name', RoleController.delete);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/role/:s_name', RoleController.patch);
+router.patch('/role/:s_id', RoleMiddleware(['admin']), RoleController.patch);
 
 /**
  * @swagger
- * /{n_user}/role:
+ * /{n_user}/role/{s_id}:
  *      post:
  *          summary: Добавление роли указанному пользователю.
  *          tags: [Users]
@@ -501,21 +497,12 @@ router.patch('/role/:s_name', RoleController.patch);
  *                      type: integer
  *                required: true
  *                description: ID пользователя
- *          requestBody:
- *              description: Объект, содержащий информацию о роли
- *              required: true
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: object
- *                          require:
- *                              - s_name
- *                          properties:
- *                              s_name:
- *                                  type: string
- *                                  description: Имя роли.
- *                          example:
- *                              s_name: mng
+ *              - in: path
+ *                name: s_id
+ *                schema:
+ *                      type: string
+ *                required: true
+ *                description: ID роли
  *          responses:
  *              200:
  *                  description: Роль успешно задана для указанного пользователя.
@@ -547,11 +534,11 @@ router.patch('/role/:s_name', RoleController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/:n_user/role', RoleController.addToUser);
+router.post('/:n_user/role/:s_id', RoleMiddleware(['admin']), RoleController.addToUser);
 
 /**
  * @swagger
- * /{n_user}/role:
+ * /{n_user}/role/{s_id}:
  *      delete:
  *          summary: Удаление роли у указанного пользователя.
  *          tags: [Users]
@@ -569,21 +556,12 @@ router.post('/:n_user/role', RoleController.addToUser);
  *                      type: integer
  *                required: true
  *                description: ID пользователя
- *          requestBody:
- *              description: Объект, содержащий информацию о роли
- *              required: true
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: object
- *                          require:
- *                              - s_name
- *                          properties:
- *                              s_name:
- *                                  type: string
- *                                  description: Имя роли.
- *                          example:
- *                              s_name: mng
+ *              - in: path
+ *                name: s_id
+ *                schema:
+ *                      type: string
+ *                required: true
+ *                description: ID роли
  *          responses:
  *              200:
  *                  description: Роль успешно удалена у указанного пользователя.
@@ -610,6 +588,6 @@ router.post('/:n_user/role', RoleController.addToUser);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:n_user/role', RoleController.deleteFromUser);
+router.delete('/:n_user/role/:s_id', RoleMiddleware(['admin']), RoleController.deleteFromUser);
 
 module.exports = router;

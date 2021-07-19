@@ -5,9 +5,9 @@ var {AssembToysSizes} = require('../models/models');
 class AssembToysController {
     async create(req, res, next) {
         try{
-            var {s_manufactur, s_model, n_articul, s_size, n_pieces} = req.body;
+            var {n_manufactur, s_model, n_articul, s_size, n_pieces} = req.body;
             var createdAssembToy = await AssembToys.create({
-                s_manufactur: s_manufactur,
+                n_manufactur: n_manufactur,
                 s_model: s_model,
                 n_articul: n_articul,
                 s_size: s_size,
@@ -39,13 +39,13 @@ class AssembToysController {
     async patch(req, res, next) {
         try{
             var {n_articul} = req.params;
-            var {s_manufactur, s_model, s_size, n_pieces} = req.body;
+            var {n_manufactur, s_model, s_size, n_pieces} = req.body;
             var assembToy = await AssembToys.findOne({
                 n_articul: n_articul
             });
 
-            if(s_manufactur){
-                assembToy.s_manufactur = s_manufactur;
+            if(n_manufactur){
+                assembToy.n_manufactur = n_manufactur;
             }
 
             if(s_model){
@@ -70,8 +70,9 @@ class AssembToysController {
 
     async createSize(req, res, next) {
         try{
-            var {s_name} = req.body;
+            var {s_id, s_name} = req.body;
             var createdSize = await AssembToysSizes.create({
+                s_id: s_id,
                 s_name: s_name
             });
 
@@ -83,10 +84,10 @@ class AssembToysController {
 
     async deleteSize(req, res, next){
         try{
-            var {s_name} = req.params;
+            var {s_id} = req.params;
             var selectedSize = await AssembToysSizes.findOne({
                 where:{
-                    s_name: s_name
+                    s_id: s_id
                 }
             });
 

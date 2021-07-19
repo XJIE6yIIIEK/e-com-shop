@@ -14,10 +14,10 @@ class AssembToysManufacturController {
 
     async delete(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {id} = req.params;
             var deletedAssembToyManuf = await AssembToysManufacturs.findOne({
                 where: {
-                    s_name: s_name
+                    id: id
                 }
             });
 
@@ -30,12 +30,12 @@ class AssembToysManufacturController {
 
     async patch(req, res, next) {
         try{
-            var {s_address, s_phone_number} = req.body;
-            var {s_name} = req.params;
+            var {s_name, s_address, s_phone_number} = req.body;
+            var {id} = req.params;
 
             var assembToyManuf = await AssembToysManufacturs.findOne({
                 where: {
-                    s_name: s_name
+                    id: id
                 }
             });
 
@@ -79,10 +79,10 @@ class AssembToysManufacturController {
 
     async get(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {id} = req.params;
             var selectedAssembToysManufacturs = await AssembToysManufacturs.findOne({
                 where: {
-                    s_name: s_name
+                    id: id
                 }
             });
 

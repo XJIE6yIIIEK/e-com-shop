@@ -2,6 +2,7 @@ var Router = require('express');
 var router = new Router();
 var GoodController = require('../controllers/goodController');
 var RoleMiddleware = require('../middleware/roleMiddleware');
+var RoleMiddleware = require('../middleware/roleMiddleware');
 
 /**
  * @swagger
@@ -17,13 +18,18 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *          GoodType:
  *              type: object
  *              require:
+ *                  - s_id
  *                  - s_name
  *              properties:
+ *                  s_id:
+ *                      type: string
+ *                      description: ID типа.
  *                  s_name:
  *                      type: string
  *                      description: Имя типа.
  *              example:
- *                  s_name: Сборная модель                     
+ *                  s_id: assemb_model
+ *                  s_name: Сборная модель                
  */
 
 /**
@@ -42,13 +48,13 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *                      description: Артикул товара.
  *                  s_type:
  *                      type: string
- *                      description: Тип товара.
+ *                      description: ID типа товара.
  *                  f_price:
  *                      type: number
  *                      description: Цена товара за штуку.
  *              example:
  *                  id: 1
- *                  s_type: Сборная модель
+ *                  s_type: assemb_model
  *                  f_price: 199.99                     
  */
 
@@ -106,11 +112,11 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *                              
  */
 //router.post('/types', RoleMiddleware(['admin']), GoodController.addType);
-router.post('/types', GoodController.addType);
+router.post('/types', RoleMiddleware(['admin']), GoodController.addType);
 
 /**
  * @swagger
- * /good/types/{s_name}:
+ * /good/types/{s_id}:
  *      delete:
  *          summary: Удаление типа товара.
  *          tags: [Goods]
@@ -123,11 +129,11 @@ router.post('/types', GoodController.addType);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: s_id
  *                schema:
  *                      type: integer
  *                required: true
- *                description: Название типа
+ *                description: ID типа
  *          responses:
  *              200:
  *                  description: Тип успешно удалён.
@@ -155,7 +161,7 @@ router.post('/types', GoodController.addType);
  *                              
  */
 //router.delete('/types/:s_name', RoleMiddleware(['admin']), GoodController.deleteType);
-router.delete('/types/:s_name', GoodController.deleteType);
+router.delete('/types/:s_id', RoleMiddleware(['admin']), GoodController.deleteType);
 
 /**
  * @swagger
@@ -226,12 +232,12 @@ router.get('/types', GoodController.getAllTypes);
  *                          properties:
  *                              s_type:
  *                                  type: string
- *                                  description: Тип товара.
+ *                                  description: ID типа товара.
  *                              f_price:
  *                                  type: number
  *                                  description: Цена товара за штуку.
  *                          example:
- *                              s_type: Сборная модель
+ *                              s_type: assemb_model
  *                              f_price: 199.99
  *          responses:
  *              200:
@@ -264,7 +270,7 @@ router.get('/types', GoodController.getAllTypes);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', GoodController.create);
+router.post('/', RoleMiddleware(['admin']), GoodController.create);
 
 /**
  * @swagger
@@ -291,6 +297,7 @@ router.post('/', GoodController.create);
  *                      type: integer
  *                required: false
  *                description: Фильтр типа товара
+ *                example: assemb_toys 
  *              - in: query
  *                name: gr_th
  *                schema:
@@ -309,12 +316,24 @@ router.post('/', GoodController.create);
  *                      type: integer
  *                required: false
  *                description: Сортировать по столбцу. Используются наименования столбцов таблицы t_goods.
- *              - in: gr_th
+ *                examples:
+ *                  Сортировка по стоимости:
+ *                      value: f_price
+ *                      summary: Столбец цены
+ *                  Сортировка по типу:
+ *                      value: s_type
+ *                      summary: Столбец типа
+ *              - in: query
  *                name: asc
  *                schema:
- *                      type: integer
+ *                      type: boolean
  *                required: false
  *                description: Сортировать по убыванию или по возрастанию.
+ *                examples:
+ *                  Сортировка по возрастанию:
+ *                      value: true
+ *                  Сортировка по убыванию:
+ *                      value: false
  *          responses:
  *              200:
  *                  description: Возврат списка товаров.
@@ -413,7 +432,7 @@ router.get('/', GoodController.getAll);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:id', GoodController.patch);
+router.patch('/:id', RoleMiddleware(['admin']), GoodController.patch);
 
 /**
  * @swagger
@@ -507,11 +526,11 @@ router.get('/:id', GoodController.get);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:id', GoodController.delete);
+router.delete('/:id', RoleMiddleware(['admin']), GoodController.delete);
 
 /**
  * @swagger
- * /good/{id}/stockpile:
+ * /good/{id}/stockpile/{n_stockpile}:
  *      post:
  *          summary: Добавление товара на склад.
  *          tags: [Goods]
@@ -529,6 +548,12 @@ router.delete('/:id', GoodController.delete);
  *                      type: integer
  *                required: true
  *                description: Артикул товара
+ *              - in: path
+ *                name: n_stockpile
+ *                schema:
+ *                      type: integer
+ *                required: true
+ *                description: ID склада
  *          requestBody:
  *              description: Объект, содержащий информацию о складе и количество товара, которое содержиться на складе.
  *              required: true
@@ -537,17 +562,12 @@ router.delete('/:id', GoodController.delete);
  *                      schema:
  *                          type: object
  *                          require:
- *                              - s_stockpile
  *                              - n_amount
  *                          properties:
- *                              s_stockpile:
- *                                  type: string
- *                                  description: Имя склада.
  *                              n_amount:
  *                                  type: number
  *                                  description: Количество товара.
  *                          example:
- *                              s_stockpile: Склад 1
  *                              n_amount: 100
  *          responses:
  *              200:
@@ -560,7 +580,7 @@ router.delete('/:id', GoodController.delete);
  *                                  n_good:
  *                                      type: integer
  *                                      description: Артикул товара
- *                                  s_stockpile:
+ *                                  n_stockpile:
  *                                      type: string
  *                                      description: Имя склада
  *                                  n_amount:
@@ -593,11 +613,11 @@ router.delete('/:id', GoodController.delete);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/:id/stockpile', GoodController.addToStockpile);
+router.post('/:id/stockpile/:n_stockpile', RoleMiddleware(['admin']), GoodController.addToStockpile);
 
 /**
  * @swagger
- * /good/{id}/stockpile:
+ * /good/{id}/stockpile/{n_stockpile}:
  *      patch:
  *          summary: Изменение товара на складе.
  *          tags: [Goods]
@@ -615,6 +635,12 @@ router.post('/:id/stockpile', GoodController.addToStockpile);
  *                      type: integer
  *                required: true
  *                description: Артикул товара
+ *              - in: path
+ *                name: n_stockpile
+ *                schema:
+ *                      type: integer
+ *                required: true
+ *                description: ID склада
  *          requestBody:
  *              description: Объект, содержащий информацию о складе и количество товара, которое содержиться на складе.
  *              required: true
@@ -623,17 +649,12 @@ router.post('/:id/stockpile', GoodController.addToStockpile);
  *                      schema:
  *                          type: object
  *                          require:
- *                              - s_stockpile
  *                              - n_amount
  *                          properties:
- *                              s_stockpile:
- *                                  type: string
- *                                  description: Имя склада.
  *                              n_amount:
  *                                  type: number
  *                                  description: Количество товара.
  *                          example:
- *                              s_stockpile: Склад 1
  *                              n_amount: 100
  *          responses:
  *              200:
@@ -661,11 +682,11 @@ router.post('/:id/stockpile', GoodController.addToStockpile);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:id/stockpile', GoodController.patchInStockpile);
+router.patch('/:id/stockpile/:n_stockpile', RoleMiddleware(['admin']), GoodController.patchInStockpile);
 
 /**
  * @swagger
- * /good/{id}/stockpile:
+ * /good/{id}/stockpile/{n_stockpile}:
  *      delete:
  *          summary: Удаление товара со склада.
  *          tags: [Goods]
@@ -683,21 +704,12 @@ router.patch('/:id/stockpile', GoodController.patchInStockpile);
  *                      type: integer
  *                required: true
  *                description: Артикул товара
- *          requestBody:
- *              description: Объект, содержащий информацию о складе.
- *              required: true
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: object
- *                          require:
- *                              - s_stockpile
- *                          properties:
- *                              s_stockpile:
- *                                  type: string
- *                                  description: Имя склада.
- *                          example:
- *                              s_stockpile: Склад 1
+ *              - in: path
+ *                name: n_stockpile
+ *                schema:
+ *                      type: integer
+ *                required: true
+ *                description: ID склада
  *          responses:
  *              200:
  *                  description: Товар успешно удалён со склада.
@@ -724,6 +736,6 @@ router.patch('/:id/stockpile', GoodController.patchInStockpile);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:id/stockpile', GoodController.deleteFromStockpile);
+router.delete('/:id/stockpile/:n_stockpile', RoleMiddleware(['admin']), GoodController.deleteFromStockpile);
 
 module.exports = router;

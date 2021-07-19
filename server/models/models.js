@@ -25,7 +25,6 @@ var UserToRoles = Sequelize.define('t_user_to_roles', {
     n_user: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_users',
             key: 'id'
@@ -36,10 +35,9 @@ var UserToRoles = Sequelize.define('t_user_to_roles', {
     s_role: {
         type: DataTypes.STRING,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_roles',
-            key: 's_name'
+            key: 's_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT'
@@ -47,24 +45,36 @@ var UserToRoles = Sequelize.define('t_user_to_roles', {
 });
 
 var Roles = Sequelize.define('t_roles', {
+    s_id: {
+        type: DataTypes.STRING,
+        primaryKey: true
+    },
     s_name: {
         type: DataTypes.STRING,
-        primaryKey: true,
         allowNull: false
     }
 });
 
 var GoodsTypes = Sequelize.define('t_goods_types', {
-    s_name: {
+    s_id: {
         type: DataTypes.STRING,
         primaryKey: true
+    },
+    s_name: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 });
 
 var Stockpiles = Sequelize.define('t_stockpiles', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     s_name: {
         type: DataTypes.STRING,
-        primaryKey: true
+        allowNull: false
     },
     s_address: {
         type: DataTypes.STRING,
@@ -77,9 +87,14 @@ var Stockpiles = Sequelize.define('t_stockpiles', {
 });
 
 var AssembToysManufacturs = Sequelize.define('t_assemb_toys_manufacturs', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     s_name: {
         type: DataTypes.STRING,
-        primaryKey: true
+        allowNull: false
     },
     s_address: {
         type: DataTypes.STRING,
@@ -92,9 +107,12 @@ var AssembToysManufacturs = Sequelize.define('t_assemb_toys_manufacturs', {
 });
 
 var AssembToysSizes = Sequelize.define('t_assemb_toys_sizes', {
+    s_id: {
+        type: DataTypes.STRING,
+        primaryKey: true
+    },
     s_name: {
         type: DataTypes.STRING,
-        primaryKey: true,
         allowNull: false
     }
 });
@@ -111,7 +129,7 @@ var Goods = Sequelize.define('t_goods', {
         allowNull: false,
         references: {
             model: 't_goods_types',
-            key: 's_name'
+            key: 's_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT'
@@ -126,7 +144,6 @@ var Basckets = Sequelize.define('t_basckets', {
     n_user: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_users',
             key: 'id'
@@ -137,7 +154,6 @@ var Basckets = Sequelize.define('t_basckets', {
     n_good: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_goods',
             key: 'id'
@@ -155,7 +171,6 @@ var Orders = Sequelize.define('t_orders', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         autoIncrement: true
     },
     n_user: {
@@ -189,7 +204,6 @@ var GoodsToOrders = Sequelize.define('t_goods_to_orders', {
     },
     n_order: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         primaryKey: true,
         references: {
             model: 't_orders',
@@ -208,7 +222,6 @@ var GoodsToStockpiles = Sequelize.define('t_goods_to_stockpiles', {
     n_good: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_goods',
             key: 'id'
@@ -216,13 +229,12 @@ var GoodsToStockpiles = Sequelize.define('t_goods_to_stockpiles', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     },
-    s_stockpile: {
-        type: DataTypes.STRING,
+    n_stockpile: {
+        type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         references: {
             model: 't_stockpiles',
-            key: 's_name'
+            key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
@@ -244,12 +256,12 @@ var AssembToys = Sequelize.define('t_assemb_toys', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     },
-    s_manufactur: {
-        type: DataTypes.STRING,
+    n_manufactur: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: 't_assemb_toys_manufacturs',
-            key: 's_name'
+            key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT'
@@ -262,7 +274,7 @@ var AssembToys = Sequelize.define('t_assemb_toys', {
         type: DataTypes.STRING,
         references: {
             model: 't_assemb_toys_sizes',
-            key: 's_name'
+            key: 's_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT'

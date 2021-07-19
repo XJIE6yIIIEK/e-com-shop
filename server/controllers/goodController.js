@@ -58,12 +58,12 @@ class GoodsController {
 
     async addToStockpile(req, res, next) {
         try{
-            var {id} = req.params;
-            var {s_stockpile, n_amount} = req.body;
+            var {id, n_stockpile} = req.params;
+            var {n_amount} = req.body;
 
             var addedGoodToStockpile = await GoodsToStockpiles.create({
                 n_good: id,
-                s_stockpile: s_stockpile,
+                n_stockpile: n_stockpile,
                 n_amount: n_amount
             });
 
@@ -75,13 +75,12 @@ class GoodsController {
 
     async deleteFromStockpile(req, res, next) {
         try{
-            var {id} = req.params;
-            var {s_stockpile} = req.body;
+            var {id, n_stockpile} = req.params;
 
             var deletedGoodFromStockpile = await GoodsToStockpiles.findOne({
                 where: {
                     n_good: id,
-                    s_stockpile: s_stockpile
+                    n_stockpile: n_stockpile
                 }
             });
 
@@ -94,13 +93,13 @@ class GoodsController {
 
     async patchInStockpile(req, res, next){
         try{
-            var {id} = req.params;
-            var {s_stockpile, n_amount} = req.body;
+            var {id, n_stockpile} = req.params;
+            var {n_amount} = req.body;
 
             var patchedGoodInStockpile = await GoodsToStockpiles.findOne({
                 where: {
                     n_good: id,
-                    s_stockpile: s_stockpile
+                    n_stockpile: n_stockpile
                 }
             });
 
@@ -117,8 +116,8 @@ class GoodsController {
 
     async addType(req, res, next) {
         try{
-            var {s_name} = req.body;
-            var createdType = await GoodsTypes.create({s_name});
+            var {s_id, s_name} = req.body;
+            var createdType = await GoodsTypes.create({s_id, s_name});
             return res.status(200).json(createdType);
         } catch(e) {
             next(e);
@@ -127,10 +126,10 @@ class GoodsController {
 
     async deleteType(req, res, next) {
         try{
-            var {s_name} = req.params;
+            var {s_id} = req.params;
             var deleatedType = await GoodsTypes.findOne({
                 where:{
-                    s_name: s_name
+                    s_id: s_id
                 }
             });
             await deleatedType.destroy();

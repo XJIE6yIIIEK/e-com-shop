@@ -2,6 +2,7 @@ var Router = require('express');
 var router = new Router();
 var AssembToysController = require('../controllers/assembToysController');
 var AssembToysManufacturController = require('../controllers/assembToysManufacturController');
+var RoleMiddleware = require('../middleware/roleMiddleware');
 
 /**
  * @swagger
@@ -17,12 +18,17 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *          AssembToysSize:
  *              type: object
  *              require:
+ *                  - s_id
  *                  - s_name
  *              properties:
+ *                  s_id:
+ *                      type: string
+ *                      description: ID модели.
  *                  s_name:
  *                      type: string
  *                      description: Размер модели.
  *              example:
+ *                  s_id: 1_1
  *                  s_name: 1:1                     
  */
 
@@ -33,10 +39,14 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *          AssembToysManufactur:
  *              type: object
  *              require:
+ *                  - id
  *                  - s_name
  *                  - s_address
  *                  - s_phone_number
  *              properties:
+ *                  id:
+ *                      type: integer
+ *                      description: ID производителя.
  *                  s_name:
  *                      type: string
  *                      description: Имя производителя.
@@ -47,6 +57,7 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *                      type: string
  *                      description: Телефон производителя
  *              example:
+ *                  id: 1
  *                  s_name: Hasbro
  *                  s_address: г. Пермь, ул. Ленина, д. 1
  *                  s_phone_number: 2130000
@@ -63,7 +74,7 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *                  - n_articul
  *                  - s_size
  *                  - n_pieces
- *                  - s_manufactur
+ *                  - n_manufactur
  *                  - s_model
  *              properties:
  *                  n_articul:
@@ -75,17 +86,17 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *                  n_pieces:
  *                      type: integer
  *                      description: Количество элементов сборной модели.
- *                  s_manufactur:
- *                      type: string
- *                      description: Производитель.
+ *                  n_manufactur:
+ *                      type: integer
+ *                      description: ID производителя.
  *                  s_model:
  *                      type: string
  *                      description: Модель.
  *              example:
  *                  n_articul: 1
- *                  s_size: 2:1
+ *                  s_size: 2_1
  *                  n_pieces: 150
- *                  s_manufactur: Zvezda
+ *                  n_manufactur: 1
  *                  s_model: Сборная модель истребителя Су-37
  */
 
@@ -142,7 +153,7 @@ var AssembToysManufacturController = require('../controllers/assembToysManufactu
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', AssembToysController.create);
+router.post('/', RoleMiddleware(['admin']), AssembToysController.create);
 
 /**
  * @swagger
@@ -178,16 +189,16 @@ router.post('/', AssembToysController.create);
  *                              n_pieces:
  *                                  type: integer
  *                                  description: Количество элементов сборной модели.
- *                              s_manufactur:
- *                                  type: string
- *                                  description: Производитель.
+ *                              n_manufactur:
+ *                                  type: integer
+ *                                  description: ID производителя.
  *                              s_model:
  *                                  type: string
  *                                  description: Модель.
  *                          examples:
- *                              s_size: 2:1
+ *                              s_size: 2_1
  *                              n_pieces: 150
- *                              s_manufactur: Zvezda
+ *                              n_manufactur: 1
  *                              s_model: Сборная модель истребителя Су-37
  *          responses:
  *              200:
@@ -215,7 +226,7 @@ router.post('/', AssembToysController.create);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:n_articul', AssembToysController.patch);
+router.patch('/:n_articul', RoleMiddleware(['admin']), AssembToysController.patch);
 
 /**
  * @swagger
@@ -263,7 +274,7 @@ router.patch('/:n_articul', AssembToysController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:n_articul', AssembToysController.delete);
+router.delete('/:n_articul', RoleMiddleware(['admin']), AssembToysController.delete);
 
 /**
  * @swagger
@@ -335,13 +346,15 @@ router.get('/:n_articul', AssembToysController.get);
  *                schema:
  *                      type: integer
  *                required: false
- *                description: Фильтр сборных моделей по производителю
+ *                description: Фильтр сборных моделей по ID производителя
+ *                example: 1
  *              - in: query
- *                name: manuf
+ *                name: size
  *                schema:
  *                      type: integer
  *                required: false
  *                description: Фильтр сборных моделей по размеру
+ *                example: 1_1
  *              - in: query
  *                name: gr_th
  *                schema:
@@ -360,12 +373,24 @@ router.get('/:n_articul', AssembToysController.get);
  *                      type: integer
  *                required: false
  *                description: Сортировать по столбцу. Используются наименования столбцов таблицы t_assemb_toys.
- *              - in: gr_th
+ *                examples:
+ *                  Сортировка по количеству деталей:
+ *                      value: n_pieces
+ *                      summary: Столбец количества деталей
+ *                  Сортировка по размеру:
+ *                      value: s_size
+ *                      summary: Столбец размеров
+ *              - in: query
  *                name: asc
  *                schema:
  *                      type: integer
  *                required: false
  *                description: Сортировать по убыванию или по возрастанию.
+ *                examples:
+ *                  Сортировка по возрастанию:
+ *                      value: true
+ *                  Сортировка по убыванию:
+ *                      value: false
  *          responses:
  *              200:
  *                  description: Возврат списка сборных моделей.
@@ -454,11 +479,11 @@ router.get('/', AssembToysController.getAll);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/sizes', AssembToysController.createSize);
+router.post('/sizes', RoleMiddleware(['admin']), AssembToysController.createSize);
 
 /**
  * @swagger
- * /assemb_toys/sizes/{s_name}:
+ * /assemb_toys/sizes/{s_id}:
  *      delete:
  *          summary: Удаление размера сборной модели.
  *          tags: [AssembToys]
@@ -471,11 +496,11 @@ router.post('/sizes', AssembToysController.createSize);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: s_id
  *                schema:
  *                      type: integer
  *                required: true
- *                description: Размер сборной модели
+ *                description: ID размера сборной модели
  *          responses:
  *              200:
  *                  description: Размер сборной модели успешно удалён.
@@ -502,7 +527,7 @@ router.post('/sizes', AssembToysController.createSize);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/sizes/:s_name', AssembToysController.deleteSize);
+router.delete('/sizes/:s_id', RoleMiddleware(['admin']), AssembToysController.deleteSize);
 
 /**
  * @swagger
@@ -598,11 +623,11 @@ router.get('/sizes', AssembToysController.getAllSizes);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/manufacturs', AssembToysManufacturController.create);
+router.post('/manufacturs', RoleMiddleware(['admin']), AssembToysManufacturController.create);
 
 /**
  * @swagger
- * /assemb_toys/manufacturs/{s_name}:
+ * /assemb_toys/manufacturs/{id}:
  *      patch:
  *          summary: Изменение информации о производителе.
  *          tags: [AssembToys]
@@ -615,11 +640,11 @@ router.post('/manufacturs', AssembToysManufacturController.create);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
- *                      type: string
+ *                      type: integer
  *                required: true
- *                description: Имя производителя
+ *                description: ID производителя
  *          requestBody:
  *              description: Объект, содержащий информацию о производителе.
  *              required: true
@@ -628,16 +653,21 @@ router.post('/manufacturs', AssembToysManufacturController.create);
  *                      schema:
  *                          type: object
  *                          require:
+ *                              - s_name
  *                              - s_address
  *                              - s_phone_number
  *                          properties:
+ *                              s_name:
+ *                                  type: string
+ *                                  description: Имя производителя
  *                              s_address:
  *                                  type: string
- *                                  description: Новый адрес производителя
+ *                                  description: Адрес производителя
  *                              s_phone_number:
  *                                  type: string
- *                                  description: Новый телефон производителя
+ *                                  description: Телефон производителя
  *                          example:
+ *                              s_name: Hasbro
  *                              s_address: г. Пермь, ул. Ленина, д. 1
  *                              s_phone_number: 2130000
  *          responses:
@@ -666,11 +696,11 @@ router.post('/manufacturs', AssembToysManufacturController.create);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/manufacturs/:s_name', AssembToysManufacturController.patch);
+router.patch('/manufacturs/:id', RoleMiddleware(['admin']), AssembToysManufacturController.patch);
 
 /**
  * @swagger
- * /assemb_toys/manufacturs/{s_name}:
+ * /assemb_toys/manufacturs/{id}:
  *      delete:
  *          summary: Удаление производителя.
  *          tags: [AssembToys]
@@ -683,11 +713,11 @@ router.patch('/manufacturs/:s_name', AssembToysManufacturController.patch);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
  *                      type: string
  *                required: true
- *                description: Имя производителя
+ *                description: ID производителя
  *          responses:
  *              200:
  *                  description: Производитель успешно удалён.
@@ -714,11 +744,11 @@ router.patch('/manufacturs/:s_name', AssembToysManufacturController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/manufacturs/:s_name', AssembToysManufacturController.delete);
+router.delete('/manufacturs/:id', RoleMiddleware(['admin']), AssembToysManufacturController.delete);
 
 /**
  * @swagger
- * /assemb_toys/manufacturs/{s_name}:
+ * /assemb_toys/manufacturs/{id}:
  *      get:
  *          summary: Получение данных о производителе.
  *          tags: [AssembToys]
@@ -731,11 +761,11 @@ router.delete('/manufacturs/:s_name', AssembToysManufacturController.delete);
  *                required: true
  *                description: JWT токен
  *              - in: path
- *                name: s_name
+ *                name: id
  *                schema:
- *                      type: string
+ *                      type: integer
  *                required: true
- *                description: Имя производителя
+ *                description: ID производителя
  *          responses:
  *              200:
  *                  description: Возврат информации о производителе.
@@ -767,7 +797,7 @@ router.delete('/manufacturs/:s_name', AssembToysManufacturController.delete);
  *                              $ref: '#/components/schemas/InternalError'
  *                              
  */
-router.get('/manufacturs/:s_name', AssembToysManufacturController.get);
+router.get('/manufacturs/:id', RoleMiddleware(['admin']), AssembToysManufacturController.get);
 
 /**
  * @swagger

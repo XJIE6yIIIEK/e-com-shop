@@ -1,6 +1,8 @@
 var Router = require('express');
 var router = new Router();
 var OrderController = require('../controllers/orderController');
+var AuthMiddleware = require('../middleware/authMiddleware');
+var RoleMiddleware = require('../middleware/roleMiddleware');
 
 /**
  * @swagger
@@ -151,7 +153,7 @@ var OrderController = require('../controllers/orderController');
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', OrderController.create);
+router.post('/', AuthMiddleware, OrderController.create);
 
 /**
  * @swagger
@@ -199,7 +201,7 @@ router.post('/', OrderController.create);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.patch('/:n_order', OrderController.patch);
+router.patch('/:n_order', RoleMiddleware(['admin']), OrderController.patch);
 
 /**
  * @swagger
@@ -247,7 +249,7 @@ router.patch('/:n_order', OrderController.patch);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.delete('/:n_order', OrderController.delete);
+router.delete('/:n_order', RoleMiddleware(['admin']), OrderController.delete);
 
 /**
  * @swagger
@@ -295,7 +297,7 @@ router.delete('/:n_order', OrderController.delete);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.get('/user/:n_user', OrderController.getAll);
+router.get('/user/:n_user', AuthMiddleware, OrderController.getAll);
 
 /**
  * @swagger
@@ -343,6 +345,6 @@ router.get('/user/:n_user', OrderController.getAll);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.get('/:n_order', OrderController.get);
+router.get('/:n_order', AuthMiddleware, OrderController.get);
 
 module.exports = router;

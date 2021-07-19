@@ -6,6 +6,10 @@ class BascketController {
     async add(req, res, next) {
         try{
             var {n_user, n_good, n_amount} = req.body;
+
+            if(req.user.id != n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
             
             var createdBascket = await Basckets.create({
                 n_user: n_user,
@@ -23,6 +27,10 @@ class BascketController {
         try{
             var {n_user} = req.params;
             var {n_good, n_amount} = req.body;
+
+            if(req.user.id != n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
 
             var patchedGoodInBascket = await Basckets.findOne({
                 where: {
@@ -44,8 +52,11 @@ class BascketController {
 
     async delete(req, res, next) {
         try{
-            var {n_user} = req.params;
-            var {n_good} = req.body;
+            var {n_user, n_good} = req.params;
+
+            if(req.user.id != n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
 
             var condition = {
                 where: {
@@ -72,6 +83,10 @@ class BascketController {
     async get(req, res, next) {
         try{
             var {n_user} = req.params;
+
+            if(req.user.id != n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
 
             var getBascketSumQuery = `SELECT sum(t_goods.f_price * t_basckets.n_amount) AS f_summa FROM t_basckets ` +
                                     `JOIN t_goods ` +

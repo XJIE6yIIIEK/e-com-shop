@@ -19,16 +19,18 @@ module.exports = async (sequelize) => {
     }
 
     var createdRole = await Roles.create({
-        s_name: 'admin'
+        s_id: 'admin',
+        s_name: 'Администратор'
     });
 
     var createdRole = await Roles.create({
-        s_name: 'user'
+        s_id: 'user',
+        s_name: 'Пользователь'
     });
 
     var createdUser = await Users.create({
         id: 1,
-        s_name: 'Администратор',
+        s_name: 'Admin',
         e_mail: process.env.ADMIN_EMAIL,
         s_hash_password: await bcrypt.hash(process.env.ADMIN_PASSWORD, 3)
     });

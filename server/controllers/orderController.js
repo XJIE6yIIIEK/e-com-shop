@@ -10,14 +10,22 @@ class OrderController {
         try{
             var {n_user} = req.body;
 
+            if(req.user.id != n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
+
             var goodsInBascket = await Basckets.findAll({
                 where: {
                     n_user: n_user
                 }
             });
 
+            if(goodsInBascket.length == 0){
+                return next(ErrorHandler.badRequest('Корзина пуста'));
+            }
+
             var createdOrder = await Orders.create({
-                n_user: user_id,
+                n_user: n_user,
                 d_ordering_date: Sequelize.literal('CURRENT_TIMESTAMP')
             });
 
@@ -47,6 +55,17 @@ class OrderController {
                 }
             });
 
+            var order = await Orders.findOne({
+                attributes: ['n_user'],
+                where: {
+                    id: n_order
+                }
+            });
+
+            if(req.user.id != order.n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
+
             for(var i = 0; i < goodsInOrders.length; i++){
                 goodsInOrders[i].destroy();
             }
@@ -70,6 +89,17 @@ class OrderController {
             var {n_order} = req.params;
 
             var order = await Orders.findOne({
+                attributes: ['n_user'],
+                where: {
+                    id: n_order
+                }
+            });
+
+            if(req.user.id != order.n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
+
+            var order = await Orders.findOne({
                 where: {
                     id: n_order
                 }
@@ -89,6 +119,10 @@ class OrderController {
     async getAll(req, res, next) {
         try{
             var {n_user} = req.params;
+
+            if(req.user.id != order.n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
 
             var orders = await Orders.findAll({
                 where: {
@@ -126,6 +160,10 @@ class OrderController {
 
             var order = await sequelize.query(getOrderQuery);
             order = order[0][0];
+
+            if(req.user.id != order.n_user){
+                return next(ErrorHandler.forbidden('Указан неверный пользователь'));
+            }
 
             order.goods = goods;
 
