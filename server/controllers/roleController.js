@@ -1,4 +1,5 @@
 var ErrorHandler = require('../error_handler/errorHandler');
+var SQLErrorHandler = require("../error_handler/sqlErrorHandler");
 var {Roles} = require('../models/models');
 var {UserToRoles} = require('../models/models');
 var {Users} = require('../models/models');
@@ -79,26 +80,6 @@ class RoleController {
             var {n_user} = req.params;
             var {s_role} = req.body;
 
-            var role = await Roles.findOne({
-                where: {
-                    s_name: s_role
-                }
-            });
-
-            var user = await Users.findOne({
-                where: {
-                    n_user: n_user
-                }
-            })
-
-            if(!role){
-                return next(ErrorHandler.badRequest('Роль не найдена'));
-            }
-
-            if(!user){
-                return next(ErrorHandler.badRequest('Пользователь не найден'));
-            }
-
             var addedRoleToUser = await UserToRoles.create({
                 n_user: n_user,
                 s_role: s_role
@@ -106,7 +87,11 @@ class RoleController {
 
             return res.status(200).json(addedRoleToUser);
         } catch(e) {
-            next(e);
+            if(!e){
+                next(e);
+            } else {
+                next(SQLErrorHandler.badRequest(e));
+            }
         }
     }
 
@@ -115,32 +100,16 @@ class RoleController {
             var {n_user} = req.params;
             var {s_role} = req.body;
 
-            var role = await Roles.findOne({
-                where: {
-                    s_name: s_role
-                }
-            });
-
-            var user = await Users.findOne({
-                where: {
-                    n_user: n_user
-                }
-            })
-
-            if(!role){
-                return next(ErrorHandler.badRequest('Роль не найдена'));
-            }
-
-            if(!user){
-                return next(ErrorHandler.badRequest('Пользователь не найден'));
-            }
-
             var deletedRoleToUser = await UserToRoles.findOne({
                 where: {
                     n_user: n_user,
                     s_role: s_role
                 }
             });
+            
+            if(!deletedRoleToUser){
+                return next(ErrorHandler.badRequest('Неверно указаны роль и/или ID пользователя'));
+            }
 
             deletedRoleToUser.destroy();
             return res.status(200);

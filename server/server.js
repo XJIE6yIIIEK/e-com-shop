@@ -22,7 +22,7 @@ var swaggerOption = {
             description: "Руководство по использованию REST методов электронного магазина"
         },
         servers: [{
-            url: "http://localhost:" + PORT
+            url: "http://localhost:" + PORT + "/api/"
         }]
     },
     apis: ["./routes/*.js"]

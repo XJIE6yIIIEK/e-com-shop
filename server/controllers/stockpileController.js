@@ -3,82 +3,105 @@ var {Stockpiles} = require('../models/models');
 var {GoodsToStockpiles} = require('../models/models');
 
 class StockpileController {
-    async create(req, res) {
-        var {s_name, s_address, s_phone_number} = req.body;
-        var created_stockpile = await Stockpiles.create({s_name, s_address, s_phone_number});
-        return res.json(created_stockpile);
-    }
-
-    async patch(req, res) {
-        var {s_address, s_phone_number} = req.body;
-        var {s_name} = req.params;
-
-        var stockpile = await Stockpiles.findOne({
-            where: {
-                s_name: s_name
+    async create(req, res, next) {
+        try{
+            var {s_name, s_address, s_phone_number} = req.body;
+            
+            if(!s_name){
+                next(ErrorHandler.badRequest('Не указано имя склада'));
             }
-        });
 
-        if(s_name){
-            stockpile.s_name = s_name;
+            var created_stockpile = await Stockpiles.create({s_name, s_address, s_phone_number});
+            return res.status(200).json(created_stockpile);
+        } catch(e){
+            next(e);
         }
+    }
 
-        if(s_address){
-            stockpile.s_address = s_address;
+    async patch(req, res, next) {
+        try{
+            var {s_address, s_phone_number} = req.body;
+            var {s_name} = req.params;
+
+            var stockpile = await Stockpiles.findOne({
+                where: {
+                    s_name: s_name
+                }
+            });
+
+            if(s_address){
+                stockpile.s_address = s_address;
+            }
+
+            if(s_phone_number){
+                stockpile.s_phone_number = s_phone_number;
+            }
+
+            await stockpile.save();
+            return res.status(200);
+        } catch(e) {
+            next(e);
         }
+    }
 
-        if(s_phone_number){
-            stockpile.s_phone_number = s_phone_number;
+    async delete(req, res, next) {
+        try{
+            var {s_name} = req.params;
+            var deleatedStockpile = await Stockpiles.findOne({
+                where:{
+                    s_name: s_name
+                }
+            });
+
+            await deleatedStockpile.destroy();
+            return res.status(200);
+        } catch(e) {
+            next(e);
         }
-
-        await stockpile.save();
-        return res.json({succesfull: true});
     }
 
-    async delete(req, res) {
-        var {s_name} = req.params;
-        var deleatedStockpile = await Stockpiles.findOne({
-            where:{
-                s_name: s_name
-            }
-        });
+    async getAll(req, res, next) {
+        try{
+            var {curPage, lim} = req.query;
 
-        /*var goodsInStockpile = await GoodsToStockpiles.findAll({
-            where:{
-                s_stockpile: s_name
-            }
-        });
-        
+            curPage = curPage - 1 || 0;
+            lim = lim || 10;
 
-        await goodsInStockpile.destroy();*/
-        await deleatedStockpile.destroy();
-        return res.json({succesfull: true});
+            var condition = {
+                offset: curPage * lim,
+                limit: lim
+            };
+
+            var selectedStockpile = await Stockpiles.findAll(condition);
+            return res.status(200).json(selectedStockpile);
+        } catch(e) {
+            next(e);
+        }
     }
 
-    async getAll(req, res) {
-        var {curPage, lim} = req.query;
+    async get(req, res, next) {
+        try{
+            var {s_name} = req.params;
+            
+            var selectedStockpile = await Stockpiles.findOne({
+                where: {
+                    s_name: s_name
+                }
+            });
 
-        curPage = curPage - 1 || 0;
-        lim = lim || 10;
+            var selectedGoods = await GoodsToStockpiles.findAll({
+                attributes: ['n_good', 'n_amount'],
+                where:{
+                    s_stockpile: s_name
+                }
+            });
 
-        var condition = {
-            offset: curPage * lim,
-            limit: lim
-        };
+            selectedStockpile.goods = selectedGoods;
 
-        var selectedStockpile = await Stockpiles.findAll(condition);
-        return res.json(selectedStockpile);
-    }
-
-    async get(req, res) {
-        var {s_name} = req.params;
-        var selectedStockpile = await Stockpiles.findOne({
-            where: {
-                s_name: s_name
-            }
-        });
-
-        return res.json(selectedStockpile);
+            return res.status(200).json(selectedStockpile);
+        } catch(e) {
+            next(e);
+        }
     }
 }
 

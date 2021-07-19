@@ -171,7 +171,7 @@ var Orders = Sequelize.define('t_orders', {
     d_ordering_date: {
         type: DataTypes.DATE
     },
-    d_ordering_date: {
+    d_receipt_date: {
         type: DataTypes.DATE
     },
 });

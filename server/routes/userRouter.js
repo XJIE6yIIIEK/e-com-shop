@@ -17,6 +17,13 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
 
 /**
  * @swagger
+ * tags:
+ *      name: UsersAuthentication
+ *      description: API для авторизации учётных записей.
+ */
+
+/**
+ * @swagger
  * components:
  *      schemas:
  *          Token:
@@ -120,7 +127,7 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *                  n_user:
  *                      type: integer
  *                      description: ID пользователя.
- *                 s_role:
+ *                  s_role:
  *                      type: string
  *                      description: Имя роли
  *              example:
@@ -134,7 +141,7 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  * /user/registration:
  *      post:
  *          summary: Регистрация пользователя в системе.
- *          tags: [Users]
+ *          tags: [UsersAuthentication]
  *          requestBody:
  *              description: Объект, содержащий никнейм, email и пароль пользователя
  *              required: true
@@ -196,7 +203,7 @@ router.post('/registration', body('e_mail').isEmail(),
  * /user/login:
  *      post:
  *          summary: Авторизация пользователя в системе.
- *          tags: [Users]
+ *          tags: [UsersAuthentication]
  *          requestBody:
  *              description: Объект, содержащий email и пароль пользователя
  *              required: true
@@ -250,7 +257,7 @@ router.post('/login', UserController.login);
  * /user/auth:
  *      get:
  *          summary: Запрос нового JWT токена для пользователя.
- *          tags: [Users]
+ *          tags: [UsersAuthentication]
  *          parameters:
  *              - in: header
  *                name: Authorization
