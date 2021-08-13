@@ -1,11 +1,73 @@
 var ErrorHandler = require('../error_handler/errorHandler');
-var {Orders} = require('../models/models');
-var {GoodsToOrders} = require('../models/models');
-var {Basckets} = require('../models/models');
+var {Orders, GoodsToOrders, Basckets, AssembToys, AssembToysManufacturs, GoodsTypes, Goods} = require('../models/models');
 var {Sequelize} = require('sequelize');
 var sequelize = require('../db');
+var MailServiceController = require('./mailServiceController');
 
 class OrderController {
+    async getOrderInformation(n_order){
+        var goodsInOrder = await GoodsToOrders.findAll({
+            where: {
+                n_order: n_order
+            }
+        });
+
+        var totalPrice = 0;
+        var goods = [];
+
+        for(var i = 0; i < goodsInOrder.length; i++){
+            var good = await Goods.findOne({
+                where: {
+                    id: goodsInOrder[i].n_good
+                }
+            });
+
+            var goodType = await GoodsTypes.findOne({
+                where: {
+                    s_id: good.s_type
+                }
+            });
+
+            var goodInfo = {};
+
+            switch(good.s_type){
+                case 'assemb_toy': {
+                    goodInfo = await AssembToys.findOne({
+                        where: {
+                            n_articul: goodsInOrder[i].n_good
+                        }
+                    });
+
+                    var assembToyManufacturInfo = await AssembToysManufacturs.findOne({
+                        where: {
+                            id: goodInfo.n_manufactur
+                        }
+                    });
+
+                    goodInfo.s_manufactur = assembToyManufacturInfo.s_name;
+                } break;
+            }
+
+            goods[i] = {
+                articul: goodsInOrder[i].n_good,
+                name: `${goodInfo.s_manufactur} ${goodInfo.s_model}`,
+                price: good.f_price,
+                amount: goodsInOrder[i].n_amount,
+                type: goodType.s_name
+            };
+
+            totalPrice += goods[i].price * goods[i].amount;
+        }
+
+        var order = {
+            order_id: n_order,
+            total_price: totalPrice,
+            items: goods
+        };
+
+        return order;
+    }
+
     async create(req, res, next) {
         try{
             var {n_user} = req.body;
@@ -14,6 +76,7 @@ class OrderController {
                 return next(ErrorHandler.forbidden('Указан неверный пользователь'));
             }
 
+            //Проверяем наличие товаров в корзине пользователя
             var goodsInBascket = await Basckets.findAll({
                 where: {
                     n_user: n_user
@@ -24,6 +87,10 @@ class OrderController {
                 return next(ErrorHandler.badRequest('Корзина пуста'));
             }
 
+            //Создание заказа:
+            //1. Добавляем заказа в БД.
+            //2. Добавляем товары к заказу.
+            //3. Как только товар был добавлен, удаляем его из корзины пользователя.
             var createdOrder = await Orders.create({
                 n_user: n_user,
                 d_ordering_date: Sequelize.literal('CURRENT_TIMESTAMP')
@@ -38,6 +105,11 @@ class OrderController {
 
                 goodsInBascket[i].destroy();
             }
+
+            var order = await this.getOrderInformation(createdOrder.id);
+
+            //Отправляем письмо с заказом по почте
+            MailServiceController.sendOrderDetails(order, n_user);
 
             return res.status(200).json(createdOrder);
         } catch(e) {
@@ -139,33 +211,17 @@ class OrderController {
     async get(req, res, next) {
         try{
             var {n_order} = req.params;
-
-            var getOrderQuery = `WITH t_order_sum AS ( ` +
-                                `   SELECT sum(t_goods.f_price * t_goods_to_orders.n_amount) AS f_summa, ${n_order} AS n_order FROM t_goods_to_orders ` +
-                                `   JOIN t_goods ` +
-                                `   ON t_goods.id = t_goods_to_orders.n_good ` +
-                                `   WHERE t_goods_to_orders.n_order = ${n_order} ` +
-                                `) ` +
-                                `SELECT t_orders.*, t_order_sum.f_summa AS f_total FROM t_orders ` +
-                                `JOIN t_order_sum ` +
-                                `ON t_order_sum.n_order = t_orders.id ` +
-                                `WHERE t_orders.id = ${n_order}`;
-
-            var goods = GoodsToOrders.findAll({
-                attributes: ['n_good', 'n_amount'],
+            var orderInfo = await Orders.findOne({
                 where: {
-                    n_order: n_order
+                    id: n_order
                 }
             });
 
-            var order = await sequelize.query(getOrderQuery);
-            order = order[0][0];
-
-            if(req.user.id != order.n_user){
+            if(req.user.id != orderInfo.n_user){
                 return next(ErrorHandler.forbidden('Указан неверный пользователь'));
             }
 
-            order.goods = goods;
+            var order = await this.getOrderInformation(n_order);
 
             return res.status(200).json(order);
         } catch(e) {

@@ -6,8 +6,9 @@ var SwaggerUI = require('swagger-ui-express');
 var SwaggerJSDoc = require('swagger-jsdoc');
 
 var sequelize = require('./db');
-var models = require('./models/models');
 var router = require('./routes/routes');
+var models = require('./models/models');
+var MailerController = require('./controllers/mailServiceController');
 var ErrorHandler = require('./middleware/middleware');
 var dbInit = require("./db_init");
 
@@ -41,6 +42,9 @@ var start = async () => {
     try {
         await sequelize.authenticate();
         await sequelize.sync();
+
+        MailerController.initialize();
+        
         app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     } catch(e) {
         console.log(e.message);

@@ -5,6 +5,7 @@ var UserController = require('../controllers/userController');
 var RoleController = require('../controllers/roleController');
 var AuthMiddleware = require('../middleware/authMiddleware');
 var RoleMiddleware = require('../middleware/roleMiddleware');
+var OrderController = require('../controllers/orderController');
 
 
 
@@ -589,5 +590,53 @@ router.post('/:n_user/role/:s_id', RoleMiddleware(['admin']), RoleController.add
  *                              
  */
 router.delete('/:n_user/role/:s_id', RoleMiddleware(['admin']), RoleController.deleteFromUser);
+
+/**
+ * @swagger
+ * /{n_user}/orders:
+ *      get:
+ *          summary: Получение списка заказов для указанного пользователя.
+ *          tags: [Users]
+ *          parameters:
+ *              - in: header
+ *                name: Authorization
+ *                schema:
+ *                      type: string
+ *                      format: Bearer <token>
+ *                required: true
+ *                description: JWT токен
+ *              - in: path
+ *                name: n_user
+ *                schema:
+ *                      type: integer
+ *                required: true
+ *                description: ID пользователя
+ *          responses:
+ *              200:
+ *                  description: Возврат списка заказов.
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              type: array
+ *                              items:
+ *                                  type: object
+ *                                  $ref: '#/components/schemas/Order'
+ *              401:
+ *                  description: Пользователь не авторизован или имеет недостаточно прав.
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              type: object
+ *                              $ref: '#/components/schemas/InternalError'
+ *              500:
+ *                  description: Произошла ошибка сервера.
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              type: object
+ *                              $ref: '#/components/schemas/InternalError' 
+ *                              
+ */
+ router.get('/:n_user/orders', AuthMiddleware, OrderController.getAll);
 
 module.exports = router;

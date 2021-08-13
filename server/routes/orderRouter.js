@@ -153,7 +153,7 @@ var RoleMiddleware = require('../middleware/roleMiddleware');
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.post('/', AuthMiddleware, OrderController.create);
+router.post('/', AuthMiddleware, OrderController.create.bind(OrderController));
 
 /**
  * @swagger
@@ -253,54 +253,6 @@ router.delete('/:n_order', RoleMiddleware(['admin']), OrderController.delete);
 
 /**
  * @swagger
- * /order/user/{n_user}:
- *      get:
- *          summary: Получение списка заказов для указанного пользователя.
- *          tags: [Orders]
- *          parameters:
- *              - in: header
- *                name: Authorization
- *                schema:
- *                      type: string
- *                      format: Bearer <token>
- *                required: true
- *                description: JWT токен
- *              - in: path
- *                name: n_user
- *                schema:
- *                      type: integer
- *                required: true
- *                description: ID пользователя
- *          responses:
- *              200:
- *                  description: Возврат списка заказов.
- *                  content:
- *                      application/json:
- *                          schema:
- *                              type: array
- *                              items:
- *                                  type: object
- *                                  $ref: '#/components/schemas/Order'
- *              401:
- *                  description: Пользователь не авторизован или имеет недостаточно прав.
- *                  content:
- *                      application/json:
- *                          schema:
- *                              type: object
- *                              $ref: '#/components/schemas/InternalError'
- *              500:
- *                  description: Произошла ошибка сервера.
- *                  content:
- *                      application/json:
- *                          schema:
- *                              type: object
- *                              $ref: '#/components/schemas/InternalError' 
- *                              
- */
-router.get('/user/:n_user', AuthMiddleware, OrderController.getAll);
-
-/**
- * @swagger
  * /order/{n_order}}:
  *      get:
  *          summary: Получение информации о заданном заказе.
@@ -345,6 +297,6 @@ router.get('/user/:n_user', AuthMiddleware, OrderController.getAll);
  *                              $ref: '#/components/schemas/InternalError' 
  *                              
  */
-router.get('/:n_order', AuthMiddleware, OrderController.get);
+router.get('/:n_order', AuthMiddleware, OrderController.get.bind(OrderController));
 
 module.exports = router;
